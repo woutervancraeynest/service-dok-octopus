@@ -1,0 +1,7 @@
+# Environment files with credentials
+.env.test
+
+# Ruby
+*.gem
+.bundle/
+vendor/bundle/

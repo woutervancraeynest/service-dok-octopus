@@ -1,0 +1,531 @@
+{
+  "tools": [
+    {
+      "name": "list_dossiers",
+      "description": "List all Octopus dossiers (company files) accessible to the authenticated user. Returns dossier IDs, descriptions, VAT numbers, and addresses. Use this to find the correct dossier ID for configuration.",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "get_bookyears",
+      "description": "Get all bookyears (boekjaren) for the configured Octopus dossier. Returns bookyear IDs, descriptions, start/end dates, periods, and whether they are closed. Use the bookyear ID in other calls that require it.",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "list_relations",
+      "description": "List all relations (clients and suppliers) in the configured Octopus dossier. Returns names, addresses, VAT numbers, bank accounts, contact details, and payment terms. Note: this endpoint is limited to 2 calls per day.",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "list_accounts",
+      "description": "List the chart of accounts (rekeningschema) for a specific bookyear in the configured Octopus dossier. Returns account numbers, descriptions, VAT settings, and cost centre configuration. Requires a bookyear_id. Note: limited to 2 calls per day.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bookyear_id": {
+            "type": "integer",
+            "description": "The bookyear ID to get accounts for. Use get_bookyears to find available IDs."
+          }
+        },
+        "required": ["bookyear_id"]
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "list_journals",
+      "description": "List all journals (dagboeken) for a specific bookyear in the configured Octopus dossier. Returns journal keys (e.g. A1=Buy, V1=Sell, F1=Financial, D1=Divers), names, currency, and last booked document number. Requires a bookyear_id.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bookyear_id": {
+            "type": "integer",
+            "description": "The bookyear ID to get journals for. Use get_bookyears to find available IDs."
+          }
+        },
+        "required": ["bookyear_id"]
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "list_buy_sell_bookings",
+      "description": "Get buy or sell bookings (aan-/verkoopboekingen) from the configured Octopus dossier. Can filter by bookyear, journal, and document number. Returns booking details including relation, amounts, VAT, booking lines, and dates.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bookyear_id": {
+            "type": "integer",
+            "description": "Filter by bookyear ID. Use get_bookyears to find available IDs."
+          },
+          "journal_key": {
+            "type": "string",
+            "description": "Filter by journal key (e.g. 'A1' for buy journal, 'V1' for sell journal). Use list_journals to find available keys."
+          },
+          "document_sequence_nr": {
+            "type": "integer",
+            "description": "Filter by specific document sequence number within a journal."
+          }
+        }
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "list_invoices",
+      "description": "Get invoices (facturen) from the configured Octopus dossier. Can filter by bookyear, journal, and document number. Returns invoice details including relation, lines with products/quantities/prices, VAT, and dates. Note: requires the Invoice Module to be activated in the dossier.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bookyear_id": {
+            "type": "integer",
+            "description": "Filter by bookyear ID. Use get_bookyears to find available IDs."
+          },
+          "journal_key": {
+            "type": "string",
+            "description": "Filter by journal key (e.g. 'V1' for sell invoices). Use list_journals to find available keys."
+          },
+          "document_sequence_nr": {
+            "type": "integer",
+            "description": "Filter by specific document sequence number within a journal."
+          }
+        }
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "create_relation",
+      "description": "Create or update a relation (client/supplier) in the configured Octopus dossier. If a relation with the given relation_id or external_relation_id already exists, it will be updated (upsert). Otherwise a new relation is created. Rate limit: 400 calls/day.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name of the relation (company or person name)"
+          },
+          "first_name": {
+            "type": "string",
+            "description": "First name (for natural persons)"
+          },
+          "client": {
+            "type": "boolean",
+            "description": "Whether this relation is a client (customer)"
+          },
+          "supplier": {
+            "type": "boolean",
+            "description": "Whether this relation is a supplier"
+          },
+          "vat_number": {
+            "type": "string",
+            "description": "VAT number. For Belgian companies use format BE0xxx.xxx.xxx"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "telephone": {
+            "type": "string",
+            "description": "Telephone number"
+          },
+          "mobile": {
+            "type": "string",
+            "description": "Mobile phone number"
+          },
+          "street_and_nr": {
+            "type": "string",
+            "description": "Street name and house number"
+          },
+          "postal_code": {
+            "type": "string",
+            "description": "Postal/ZIP code"
+          },
+          "city": {
+            "type": "string",
+            "description": "City name"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country code (e.g. 'BE', 'NL', 'DE', 'FR'). Defaults to 'BE'."
+          },
+          "iban": {
+            "type": "string",
+            "description": "IBAN bank account number"
+          },
+          "bic": {
+            "type": "string",
+            "description": "BIC/SWIFT code"
+          },
+          "currency_code": {
+            "type": "string",
+            "description": "Currency code (e.g. 'EUR'). Defaults to 'EUR'."
+          },
+          "payment_days": {
+            "type": "integer",
+            "description": "Payment term in days (e.g. 30)"
+          },
+          "relation_id": {
+            "type": "integer",
+            "description": "Internal Octopus relation key (for updating an existing relation)"
+          },
+          "external_relation_id": {
+            "type": "integer",
+            "description": "External relation ID from your system (for matching/updating)"
+          }
+        },
+        "required": ["name"]
+      },
+      "annotations": {
+        "read_only_hint": false,
+        "destructive_hint": false,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "create_buy_sell_booking",
+      "description": "Create a buy or sell booking (aan-/verkoopboeking) in the configured Octopus dossier. Use journal_key 'A1' for buy bookings, 'V1' for sell bookings. For credit notes, set amount to negative (but keep line amounts positive). First use get_bookyears to find the bookyear_id and list_journals to find the journal_key. Rate limit: 400 calls/day.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bookyear_id": {
+            "type": "integer",
+            "description": "Bookyear ID. Use get_bookyears to find available IDs."
+          },
+          "journal_key": {
+            "type": "string",
+            "description": "Journal code (e.g. 'A1' for buy, 'V1' for sell). Use list_journals to find available keys."
+          },
+          "document_sequence_nr": {
+            "type": "integer",
+            "description": "Document sequence number within the journal. Check list_journals for the last booked document number."
+          },
+          "period_nr": {
+            "type": "integer",
+            "description": "Bookyear period number (usually 1-12 for monthly periods)"
+          },
+          "document_date": {
+            "type": "string",
+            "description": "Document date in YYYY-MM-DD format"
+          },
+          "expiry_date": {
+            "type": "string",
+            "description": "Payment expiry date in YYYY-MM-DD format"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Total booking amount (negative for credit notes)"
+          },
+          "currency_code": {
+            "type": "string",
+            "description": "Currency code (defaults to 'EUR')"
+          },
+          "relation_id": {
+            "type": "integer",
+            "description": "Internal Octopus relation key of the client/supplier"
+          },
+          "external_relation_id": {
+            "type": "integer",
+            "description": "External relation ID of the client/supplier"
+          },
+          "reference": {
+            "type": "string",
+            "description": "Document reference (e.g. invoice number)"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment/description for the booking"
+          },
+          "order_reference": {
+            "type": "string",
+            "description": "Order reference"
+          },
+          "booking_lines": {
+            "type": "array",
+            "description": "Booking lines with account details, amounts, and VAT",
+            "items": {
+              "type": "object",
+              "properties": {
+                "account_key": {
+                  "type": "integer",
+                  "description": "Account number (e.g. 600000 for purchases, 700000 for sales)"
+                },
+                "base_amount": {
+                  "type": "number",
+                  "description": "Base amount (excl. VAT)"
+                },
+                "vat_code": {
+                  "type": "string",
+                  "description": "VAT code (e.g. '21' for 21% VAT, '06' for 6%, 'D21' for deductible 21%)"
+                },
+                "vat_amount": {
+                  "type": "number",
+                  "description": "VAT amount"
+                },
+                "comment": {
+                  "type": "string",
+                  "description": "Line comment"
+                },
+                "cost_centre_id": {
+                  "type": "integer",
+                  "description": "Cost centre ID (optional)"
+                }
+              }
+            }
+          }
+        },
+        "required": ["bookyear_id", "journal_key", "document_sequence_nr", "period_nr", "document_date", "expiry_date", "amount"]
+      },
+      "annotations": {
+        "read_only_hint": false,
+        "destructive_hint": false,
+        "idempotent_hint": false
+      }
+    },
+    {
+      "name": "create_invoice",
+      "description": "Create a sell invoice (verkoopfactuur) in the configured Octopus dossier. Requires the Invoice Module to be activated. Uses V-journals (sell journals). For credit notes, both total and line amounts must be negative. At least one invoice_line is required. First use get_bookyears and list_journals to find the right IDs. Rate limit: 400 calls/day.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bookyear_id": {
+            "type": "integer",
+            "description": "Bookyear ID. Use get_bookyears to find available IDs."
+          },
+          "journal_key": {
+            "type": "string",
+            "description": "Sell journal code (e.g. 'V1'). Use list_journals to find available keys."
+          },
+          "document_sequence_nr": {
+            "type": "integer",
+            "description": "Document sequence number within the journal"
+          },
+          "period_nr": {
+            "type": "integer",
+            "description": "Bookyear period number (usually 1-12)"
+          },
+          "document_date": {
+            "type": "string",
+            "description": "Invoice date in YYYY-MM-DD format"
+          },
+          "expiry_date": {
+            "type": "string",
+            "description": "Payment due date in YYYY-MM-DD format"
+          },
+          "currency_code": {
+            "type": "string",
+            "description": "Currency code (defaults to 'EUR')"
+          },
+          "relation_id": {
+            "type": "integer",
+            "description": "Internal Octopus relation key of the customer"
+          },
+          "external_relation_id": {
+            "type": "integer",
+            "description": "External relation ID of the customer"
+          },
+          "reference": {
+            "type": "string",
+            "description": "Invoice reference"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Comment"
+          },
+          "order_reference": {
+            "type": "string",
+            "description": "Order reference"
+          },
+          "invoice_lines": {
+            "type": "array",
+            "description": "Invoice lines with product details, quantities, and prices",
+            "items": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "description": "Line description"
+                },
+                "count": {
+                  "type": "number",
+                  "description": "Quantity"
+                },
+                "unit_price": {
+                  "type": "number",
+                  "description": "Price per unit (excl. VAT)"
+                },
+                "unit": {
+                  "type": "string",
+                  "description": "Unit of measure (e.g. 'pcs', 'hours', 'kg')"
+                },
+                "vat_code": {
+                  "type": "string",
+                  "description": "VAT code (e.g. '21', '06')"
+                },
+                "booking_account_nr": {
+                  "type": "integer",
+                  "description": "Booking account number (e.g. 700000)"
+                },
+                "discount_percentage": {
+                  "type": "number",
+                  "description": "Discount percentage on line total"
+                },
+                "product_nr": {
+                  "type": "string",
+                  "description": "External product number"
+                },
+                "cost_centre_id": {
+                  "type": "integer",
+                  "description": "Cost centre ID (optional)"
+                }
+              }
+            }
+          }
+        },
+        "required": ["bookyear_id", "journal_key", "document_sequence_nr", "period_nr", "document_date", "expiry_date", "invoice_lines"]
+      },
+      "annotations": {
+        "read_only_hint": false,
+        "destructive_hint": false,
+        "idempotent_hint": false
+      }
+    },
+    {
+      "name": "create_financial_divers_booking",
+      "description": "Create a financial or divers booking in the configured Octopus dossier. Use journal_key 'F1' for financial journals, 'D1' for divers. Each booking line must specify a type: 'A' for account line, 'C' for client line, 'S' for supplier line. At least one booking_line is required. Rate limit: 400 calls/day.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bookyear_id": {
+            "type": "integer",
+            "description": "Bookyear ID. Use get_bookyears to find available IDs."
+          },
+          "journal_key": {
+            "type": "string",
+            "description": "Journal code (e.g. 'F1' for financial, 'D1' for divers). Use list_journals to find available keys."
+          },
+          "document_sequence_nr": {
+            "type": "integer",
+            "description": "Document sequence number within the journal"
+          },
+          "period_nr": {
+            "type": "integer",
+            "description": "Bookyear period number (usually 1-12)"
+          },
+          "document_date": {
+            "type": "string",
+            "description": "Document date in YYYY-MM-DD format"
+          },
+          "booking_lines": {
+            "type": "array",
+            "description": "Booking lines. Each line must have a type ('A'=Account, 'C'=Client, 'S'=Supplier) and an amount.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "'A' for account line, 'C' for client line, 'S' for supplier line"
+                },
+                "account_key": {
+                  "type": "integer",
+                  "description": "Account number (required when type is 'A')"
+                },
+                "relation_id": {
+                  "type": "integer",
+                  "description": "Relation ID (required when type is 'C' or 'S')"
+                },
+                "external_relation_id": {
+                  "type": "integer",
+                  "description": "External relation ID (alternative to relation_id for type 'C' or 'S')"
+                },
+                "amount": {
+                  "type": "number",
+                  "description": "Amount (positive for debit, negative for credit)"
+                },
+                "reference": {
+                  "type": "string",
+                  "description": "Reference for this line"
+                },
+                "cost_centre_id": {
+                  "type": "integer",
+                  "description": "Cost centre ID (optional)"
+                }
+              },
+              "required": ["type", "amount"]
+            }
+          }
+        },
+        "required": ["bookyear_id", "journal_key", "document_sequence_nr", "period_nr", "document_date", "booking_lines"]
+      },
+      "annotations": {
+        "read_only_hint": false,
+        "destructive_hint": false,
+        "idempotent_hint": false
+      }
+    }
+  ],
+  "configuration": {
+    "octopus_user": {
+      "label": "Octopus gebruikersnaam",
+      "type": "text",
+      "placeholder": "user@company.be",
+      "description": "Je Octopus login gebruikersnaam"
+    },
+    "octopus_password": {
+      "label": "Octopus wachtwoord",
+      "type": "text",
+      "placeholder": "",
+      "description": "Het wachtwoord van je Octopus account"
+    },
+    "software_house_id": {
+      "label": "Software House ID",
+      "type": "text",
+      "placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "description": "Software House UUID verkregen van Octopus (aanvragen via webservice@octopus.be)"
+    },
+    "dossier_id": {
+      "label": "Dossier ID",
+      "type": "text",
+      "placeholder": "12345",
+      "description": "Het Octopus dossier-ID waarmee gewerkt wordt. Gebruik de 'list_dossiers' tool om beschikbare dossiers te vinden."
+    }
+  },
+  "runtime": {
+    "port": 8080,
+    "health_check": "/health"
+  }
+}
