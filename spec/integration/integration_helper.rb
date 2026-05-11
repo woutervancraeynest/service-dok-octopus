@@ -15,8 +15,8 @@ require_relative "../../app"
 # ---------------------------------------------------------------------------
 OCTOPUS_USER              = ENV.fetch("OCTOPUS_USER", "bybe27@D05000000")
 OCTOPUS_PASSWORD          = ENV.fetch("OCTOPUS_PASSWORD", "bybe27")
-OCTOPUS_SOFTWARE_HOUSE_ID = ENV.fetch("OCTOPUS_SOFTWARE_HOUSE_ID", "")
-OCTOPUS_DOSSIER_ID        = ENV.fetch("OCTOPUS_DOSSIER_ID", "")
+OCTOPUS_SOFTWARE_HOUSE_ID = ENV.fetch("OCTOPUS_SOFTWARE_HOUSE_ID", "<SOFTWARE_HOUSE_ID>")
+OCTOPUS_DOSSIER_ID        = ENV.fetch("OCTOPUS_DOSSIER_ID", "49555")
 
 # ---------------------------------------------------------------------------
 # VCR configuration
@@ -39,7 +39,7 @@ VCR.configure do |c|
   c.filter_sensitive_data("<OCTOPUS_USER>")     { OCTOPUS_USER }
   c.filter_sensitive_data("<OCTOPUS_PASSWORD>") { OCTOPUS_PASSWORD }
 
-  if OCTOPUS_SOFTWARE_HOUSE_ID != ""
+  if OCTOPUS_SOFTWARE_HOUSE_ID != "<SOFTWARE_HOUSE_ID>"
     c.filter_sensitive_data("<SOFTWARE_HOUSE_ID>") { OCTOPUS_SOFTWARE_HOUSE_ID }
   end
 
@@ -95,8 +95,12 @@ end
 # ---------------------------------------------------------------------------
 RSpec.configure do |config|
   # Helper: are we configured to talk to the real API?
+  # When using placeholder defaults, we are NOT configured for live recording.
   config.add_setting :octopus_configured
-  config.octopus_configured = OCTOPUS_SOFTWARE_HOUSE_ID != "" && OCTOPUS_DOSSIER_ID != ""
+  config.octopus_configured = ENV.key?("OCTOPUS_SOFTWARE_HOUSE_ID") &&
+                              ENV["OCTOPUS_SOFTWARE_HOUSE_ID"] != "" &&
+                              ENV.key?("OCTOPUS_DOSSIER_ID") &&
+                              ENV["OCTOPUS_DOSSIER_ID"] != ""
 
   # Skip integration tests when credentials are not configured and no cassettes exist
   config.before(:each, :integration) do |example|
@@ -106,8 +110,15 @@ RSpec.configure do |config|
     ) + ".yml"
 
     unless RSpec.configuration.octopus_configured || File.exist?(cassette_path)
-      skip "Skipped: OCTOPUS_SOFTWARE_HOUSE_ID and OCTOPUS_DOSSIER_ID not set. " \
-           "Set these environment variables to record cassettes."
+      skip "Skipped: OCTOPUS_SOFTWARE_HOUSE_ID and OCTOPUS_DOSSIER_ID not set " \
+           "and no cassette found. Set these environment variables to record cassettes."
+    end
+  end
+
+  # Wrap each test that specifies a vcr_cassette in VCR.use_cassette
+  config.around(:each, :vcr_cassette) do |example|
+    VCR.use_cassette(example.metadata[:vcr_cassette]) do
+      example.run
     end
   end
 end

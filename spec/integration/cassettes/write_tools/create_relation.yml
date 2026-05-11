@@ -1,0 +1,103 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://service.inaras.be/octopus-rest-api/v1/authentication
+    body:
+      encoding: UTF-8
+      string: '{"user":"<OCTOPUS_USER>","password":"<OCTOPUS_PASSWORD>"}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Softwarehouseuuid:
+      - "<SOFTWARE_HOUSE_ID>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '237'
+      Date:
+      - Mon, 11 May 2026 20:26:39 GMT
+    body:
+      encoding: UTF-8
+      string: '{"token":"<AUTH_TOKEN>"}'
+  recorded_at: Mon, 11 May 2026 20:26:39 GMT
+- request:
+    method: post
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers?dossierId=49555
+    body:
+      encoding: UTF-8
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Token:
+      - "<AUTH_TOKEN>"
+      Content-Length:
+      - '0'
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '276'
+      Date:
+      - Mon, 11 May 2026 20:26:39 GMT
+    body:
+      encoding: UTF-8
+      string: '{"Dossiertoken":"<DOSSIER_TOKEN>"}'
+  recorded_at: Mon, 11 May 2026 20:26:39 GMT
+- request:
+    method: put
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers/49555/relations
+    body:
+      encoding: UTF-8
+      string: '{"currencyCode":"EUR","relationIdentificationServiceData":{"externalRelationId":99999},"name":"Dok
+        Integration Test BV","client":true,"supplier":false,"email":"integration-test@dok.example","streetAndNr":"Teststraat
+        1","postalCode":"1000","city":"Brussel","country":"BE"}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Dossiertoken:
+      - "<DOSSIER_TOKEN>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 201
+      message: Created
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '623'
+      Date:
+      - Mon, 11 May 2026 20:26:39 GMT
+    body:
+      encoding: UTF-8
+      string: '{"active":true,"city":"Brussel","client":true,"corporationType":0,"country":"BE","currencyCode":"EUR","defaultBookingAccountClient":0,"defaultBookingAccountSupplier":0,"email":"integration-test@dok.example","expirationDays":30,"expirationType":2,"factLanguage":0,"fax":"","financialDiscount":false,"mobile":"","name":"Dok
+        Integration Test BV","postalCode":"1000","relationIdentificationServiceData":{"externalRelationId":99999,"relationKey":{"id":28}},"sddActive":false,"sddMandateType":0,"sddSeqtype":0,"streetAndNr":"Teststraat
+        1","supplier":false,"supplierPaymentMethod":0,"telephone":"","url":"","vatNr":"","vatType":0}'
+  recorded_at: Mon, 11 May 2026 20:26:39 GMT
+recorded_with: VCR 6.4.0

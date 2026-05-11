@@ -1,0 +1,66 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://service.inaras.be/octopus-rest-api/v1/authentication
+    body:
+      encoding: UTF-8
+      string: '{"user":"<OCTOPUS_USER>","password":"<OCTOPUS_PASSWORD>"}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Softwarehouseuuid:
+      - "<SOFTWARE_HOUSE_ID>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '237'
+      Date:
+      - Mon, 11 May 2026 20:26:35 GMT
+    body:
+      encoding: UTF-8
+      string: '{"token":"<AUTH_TOKEN>"}'
+  recorded_at: Mon, 11 May 2026 20:26:35 GMT
+- request:
+    method: get
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Token:
+      - "<AUTH_TOKEN>"
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '204'
+      Date:
+      - Mon, 11 May 2026 20:26:35 GMT
+    body:
+      encoding: UTF-8
+      string: '[{"dossierDescription":"by2.be","dossierKey":{"id":49555},"vatNr":"BE0000.000.097","city":"Brugge","country":"BE","email":"","languageCode":"nl","postalCode":"8000","streetAndNr":"Kolenkaai
+        68","url":""}]'
+  recorded_at: Mon, 11 May 2026 20:26:35 GMT
+recorded_with: VCR 6.4.0
