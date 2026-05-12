@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gem "sinatra", "~> 4.0"
 gem "rackup"
 gem "webrick"
-gem "octopus_client", git: "https://github.com/by2-be/octopus_client.git"
+gem "octopus_client", path: "vendor/octopus_client"
 
 group :development, :test do
   gem "rspec", "~> 3.13"

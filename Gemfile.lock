@@ -1,6 +1,5 @@
-GIT
-  remote: https://github.com/by2-be/octopus_client.git
-  revision: f7b3f9d2488129b3ec1a1de798a1f4b4dfcced76
+PATH
+  remote: vendor/octopus_client
   specs:
     octopus_client (0.2.1)
       faraday (~> 2.0)
