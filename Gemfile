@@ -3,8 +3,7 @@ source "https://rubygems.org"
 gem "sinatra", "~> 4.0"
 gem "rackup"
 gem "webrick"
-gem "faraday", "~> 2.0"
-gem "faraday-cookie_jar", "~> 0.0.7"
+gem "octopus_client", git: "https://github.com/by2-be/octopus_client.git"
 
 group :development, :test do
   gem "rspec", "~> 3.13"

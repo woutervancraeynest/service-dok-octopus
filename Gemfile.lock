@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/by2-be/octopus_client.git
+  revision: 914387502982664323caf7023b55ed2d73de2d1f
+  specs:
+    octopus_client (0.1.0)
+      faraday (~> 2.0)
+      faraday-cookie_jar (~> 0.0.7)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -75,8 +83,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  faraday (~> 2.0)
-  faraday-cookie_jar (~> 0.0.7)
+  octopus_client!
   rack-test (~> 2.1)
   rackup
   rspec (~> 3.13)

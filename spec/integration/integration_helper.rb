@@ -30,7 +30,7 @@ VCR.configure do |c|
   # :all    — always re-record (useful when re-recording after API changes)
   c.default_cassette_options = {
     record: :once,
-    match_requests_on: [:method, :uri, :body]
+    match_requests_on: [:method, :uri]
   }
 
   # ---- Sanitize credentials in cassettes ----

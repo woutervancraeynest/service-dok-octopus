@@ -2,7 +2,7 @@ require "sinatra/base"
 require "json"
 
 require_relative "lib/service"
-require_relative "lib/octopus_client"
+require "octopus_client"
 
 # Auto-load all tool files (including concerns subdirectory)
 Dir[File.join(__dir__, "lib", "tools", "concerns", "*.rb")].each { |f| require f }
