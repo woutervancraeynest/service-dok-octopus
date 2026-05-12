@@ -1,6 +1,6 @@
 FROM ruby:3.3-slim
 
-RUN apt-get update -qq && apt-get install --no-install-recommends -y build-essential && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq && apt-get install --no-install-recommends -y build-essential git && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
