@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/by2-be/octopus_client.git
-  revision: 914387502982664323caf7023b55ed2d73de2d1f
+  revision: 35b602e3e3c1b27dc2c432d413d7f8a244d58636
   specs:
-    octopus_client (0.1.0)
+    octopus_client (0.2.0)
       faraday (~> 2.0)
       faraday-cookie_jar (~> 0.0.7)
 
@@ -30,7 +30,7 @@ GEM
     hashdiff (1.2.1)
     http-cookie (1.1.6)
       domain_name (~> 0.5)
-    json (2.19.4)
+    json (2.19.5)
     logger (1.7.0)
     mustermann (3.1.1)
     net-http (0.9.1)
