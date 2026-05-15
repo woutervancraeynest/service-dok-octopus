@@ -110,6 +110,12 @@ class DokService < Sinatra::Base
   set :bind, "0.0.0.0"
   set :show_exceptions, false
 
+  # Allow requests from any host — this service runs on an internal Docker
+  # network (dok-services) and is only reachable via the Dok proxy, never
+  # directly from the internet. Without this, Sinatra 4's rack-protection
+  # blocks requests arriving with the Docker container hostname as Host header.
+  set :host_authorization, { permitted_hosts: [] }
+
   # --- Endpoints ---
 
   get "/health" do
