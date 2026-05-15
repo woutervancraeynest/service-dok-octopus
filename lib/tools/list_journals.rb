@@ -5,6 +5,9 @@
 #
 # Requires a bookyear_id parameter (use get_bookyears to find available IDs).
 #
+# Fallback: if the standard endpoint returns HTTP 400, falls back to the
+# /modified endpoint which is more reliable on some dossiers.
+#
 module Tools
   class ListJournals
     extend OctopusAuth
@@ -14,13 +17,22 @@ module Tools
       return { error: "bookyear_id is required. Use get_bookyears to find available bookyear IDs." } unless bookyear_id
 
       with_dossier_connection(context) do |client|
-        journals = client.get_journals(bookyear_id: bookyear_id)
+        journals = begin
+          client.get_journals(bookyear_id: bookyear_id)
+        rescue OctopusClient::ApiError => e
+          raise unless e.message.include?("HTTP 400")
+
+          # Fallback to /modified endpoint
+          client.get_modified_journals(modified_timestamp: "2000-01-01 00:00:00.000")
+        end
 
         return { journals: [], total: 0 } if journals.nil? || journals.empty?
 
+        result = journals.is_a?(Array) ? journals : [journals]
+
         {
-          journals: journals,
-          total: journals.length
+          journals: result,
+          total: result.length
         }
       end
     end
