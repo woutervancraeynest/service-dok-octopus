@@ -1752,25 +1752,76 @@
     },
     {
       "name": "insert_balancing",
-      "description": "Insert a balancing entry in the configured Octopus dossier. Creates a balancing entry to match payments with invoices or other documents. Rate limit: 400 calls/day.",
+      "description": "Insert a balancing entry in the configured Octopus dossier. Creates a balancing entry to match a bank payment (F-journal) with an invoice (A/V-journal). The document_keys array must contain at least two documents: typically one bank booking and one invoice. Rate limit: 400 calls/day.",
       "input_schema": {
         "type": "object",
         "properties": {
           "amount": {
             "type": "number",
-            "description": "Balancing amount"
+            "description": "Balancing amount (the amount being matched between the two documents)"
           },
           "reference": {
             "type": "string",
-            "description": "Balancing reference"
+            "description": "Balancing reference (e.g. invoice number or payment reference)"
           },
           "balancing_date": {
             "type": "string",
-            "description": "Balancing date in YYYY-MM-DD format"
+            "description": "Balancing date in YYYY-MM-DD format (usually the bank transaction date)"
           },
           "document_keys": {
             "type": "array",
-            "description": "Documents to balance",
+            "description": "Documents to balance (typically one F-journal bank entry and one A/V-journal invoice)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "bookyear_id": {
+                  "type": "integer",
+                  "description": "Bookyear ID of the document"
+                },
+                "journal_key": {
+                  "type": "string",
+                  "description": "Journal key (e.g. 'F1' for bank, 'A1' for buy, 'V1' for sell)"
+                },
+                "document_sequence_nr": {
+                  "type": "integer",
+                  "description": "Document sequence number within the journal"
+                }
+              }
+            }
+          }
+        }
+      },
+      "annotations": {
+        "read_only_hint": false,
+        "destructive_hint": false,
+        "idempotent_hint": false
+      }
+    },
+    {
+      "name": "delete_balancing",
+      "description": "Delete a balancing entry from the configured Octopus dossier. Use this to undo an incorrect payment-to-invoice match. Supports three modes: 'item' (delete specific balancing by document keys), 'bookingline' (delete all balancings for a booking line), 'document' (delete all balancings for a document). Rate limit: 400 calls/day.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Delete mode: 'item' (default), 'bookingline', or 'document'"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Balancing amount (for mode 'item')"
+          },
+          "reference": {
+            "type": "string",
+            "description": "Balancing reference (for mode 'item')"
+          },
+          "balancing_date": {
+            "type": "string",
+            "description": "Balancing date in YYYY-MM-DD format (for mode 'item')"
+          },
+          "document_keys": {
+            "type": "array",
+            "description": "Documents of the balancing to delete (for mode 'item')",
             "items": {
               "type": "object",
               "properties": {
@@ -1788,13 +1839,47 @@
                 }
               }
             }
+          },
+          "bookyear_id": {
+            "type": "integer",
+            "description": "Bookyear ID (for modes 'bookingline' and 'document')"
+          },
+          "journal_key": {
+            "type": "string",
+            "description": "Journal key (for modes 'bookingline' and 'document')"
+          },
+          "document_sequence_nr": {
+            "type": "integer",
+            "description": "Document sequence number (for modes 'bookingline' and 'document')"
+          },
+          "booking_line_sequence_nr": {
+            "type": "integer",
+            "description": "Booking line sequence number (for mode 'bookingline' only)"
           }
         }
       },
       "annotations": {
         "read_only_hint": false,
-        "destructive_hint": false,
+        "destructive_hint": true,
         "idempotent_hint": false
+      }
+    },
+    {
+      "name": "get_modified_balancings",
+      "description": "Get recently modified balancings from the configured Octopus dossier. Returns balancings created or modified since the specified timestamp. Use this to verify that reconciliation entries were recorded correctly, or to audit recent balancing activity.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "modified_timestamp": {
+            "type": "string",
+            "description": "Return balancings modified since this timestamp (format: 'YYYY-MM-DD HH:MM:SS.sss'). Defaults to all balancings if not specified."
+          }
+        }
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true
       }
     },
     {

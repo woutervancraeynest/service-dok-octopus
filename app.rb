@@ -100,6 +100,8 @@ class DokService < Sinatra::Base
     
     # Write tools - Balancing and bookyears
     "insert_balancing"                => Tools::InsertBalancing,
+    "delete_balancing"                => Tools::DeleteBalancing,
+    "get_modified_balancings"         => Tools::GetModifiedBalancings,
     "create_bookyear"                 => Tools::CreateBookyear,
     "update_bookyear"                 => Tools::UpdateBookyear,
     "book_bookyear"                   => Tools::BookBookyear
