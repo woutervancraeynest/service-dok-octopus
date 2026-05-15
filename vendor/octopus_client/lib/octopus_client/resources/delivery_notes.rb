@@ -2,6 +2,9 @@ module OctopusClient
   class Client
     module DeliveryNotes
       # GET /dossiers/{dossierId}/deliverynotes — Get delivery notes.
+      #
+      # Falls back to the /modified endpoint when the standard endpoint
+      # returns HTTP 400 (a known Octopus API quirk on some dossiers).
       def get_delivery_notes(bookyear_key_id: nil, journal_key: nil, document_sequence_nr: nil)
         ensure_dossier_connected!
 
@@ -9,6 +12,13 @@ module OctopusClient
           req.params["bookyearKeyId"] = bookyear_key_id.to_i if bookyear_key_id
           req.params["journalKey"] = journal_key if journal_key
           req.params["documentSequenceNr"] = document_sequence_nr.to_i if document_sequence_nr
+        end
+
+        if response.status == 400
+          return fallback_modified_delivery_notes(
+            bookyear_key_id: bookyear_key_id, journal_key: journal_key,
+            document_sequence_nr: document_sequence_nr
+          )
         end
 
         return handle_api_error!(response) unless response.success?
@@ -83,6 +93,19 @@ module OctopusClient
 
         return handle_api_error!(response) unless response.success?
         response.body
+      end
+
+      private
+
+      def fallback_modified_delivery_notes(bookyear_key_id:, journal_key:, document_sequence_nr:)
+        result = get_modified_delivery_notes(
+          bookyear_id: bookyear_key_id || -1,
+          journal_key: journal_key,
+          modified_timestamp: "2000-01-01 00:00:00.000"
+        )
+        return result unless document_sequence_nr && result.is_a?(Array)
+
+        result.select { |n| n["documentSequenceNr"] == document_sequence_nr.to_i }
       end
     end
   end

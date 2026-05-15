@@ -2,10 +2,18 @@ module OctopusClient
   class Client
     module Journals
       # GET /dossiers/{dossierId}/bookyears/{bookyearId}/journals — Get journals.
+      #
+      # Falls back to the /modified endpoint when the standard endpoint
+      # returns HTTP 400 (a known Octopus API quirk on some dossiers).
       def get_journals(bookyear_id:)
         ensure_dossier_connected!
 
         response = dossier_get("dossiers/#{@dossier_id}/bookyears/#{bookyear_id.to_i}/journals")
+
+        if response.status == 400
+          return fallback_modified_journals
+        end
+
         return handle_api_error!(response) unless response.success?
         response.body
       end
@@ -159,6 +167,12 @@ module OctopusClient
 
         return handle_api_error!(response) unless response.success?
         response.body
+      end
+
+      private
+
+      def fallback_modified_journals
+        get_modified_journals(modified_timestamp: "2000-01-01 00:00:00.000")
       end
     end
   end

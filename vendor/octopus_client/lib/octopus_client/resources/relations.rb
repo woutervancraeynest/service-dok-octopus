@@ -2,10 +2,18 @@ module OctopusClient
   class Client
     module Relations
       # GET /dossiers/{dossierId}/relations — Get all relations (clients/suppliers).
+      #
+      # Falls back to the /modified endpoint when the standard endpoint
+      # returns HTTP 400 (a known Octopus API quirk on some dossiers).
       def get_relations
         ensure_dossier_connected!
 
         response = dossier_get("dossiers/#{@dossier_id}/relations")
+
+        if response.status == 400
+          return fallback_modified_relations
+        end
+
         return handle_api_error!(response) unless response.success?
         response.body
       end
@@ -37,6 +45,13 @@ module OctopusClient
 
         return handle_api_error!(response) unless response.success?
         response.body
+      end
+
+      private
+
+      def fallback_modified_relations
+        result = get_modified_relations(modified_timestamp: "2000-01-01 00:00:00.000")
+        result.is_a?(Hash) ? (result["modified"] || result) : result
       end
     end
   end
