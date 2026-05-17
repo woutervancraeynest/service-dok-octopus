@@ -30,7 +30,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/deliverynotes", delivery_note_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
-        { status: "created" }
+        { status: "created", body: response.body }
       end
 
       # PUT /dossiers/{dossierId}/deliverynotes — Update a delivery note.

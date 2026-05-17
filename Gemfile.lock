@@ -1,7 +1,7 @@
 PATH
   remote: vendor/octopus_client
   specs:
-    octopus_client (0.3.0)
+    octopus_client (1.0.0)
       faraday (~> 2.0)
       faraday-cookie_jar (~> 0.0.7)
 

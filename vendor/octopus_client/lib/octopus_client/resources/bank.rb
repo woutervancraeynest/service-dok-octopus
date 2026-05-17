@@ -23,7 +23,7 @@ module OctopusClient
         end
 
         handle_write_error!(response) unless response.success?
-        response.body
+        { status: "created", body: response.body }
       end
 
       # POST /dossiers/{dossierId}/bank/paymentlist/freepayment — Add a free payment.
@@ -31,7 +31,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/bank/paymentlist/freepayment", payment_data)
         handle_write_error!(response) unless response.success?
-        response.body
+        { status: "created", body: response.body }
       end
 
       # DELETE /dossiers/{dossierId}/bank/paymentlist/{paymentListKeyId}
@@ -63,7 +63,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/bank/enveloppes", envelope_data)
         handle_write_error!(response) unless response.success?
-        response.body
+        { status: "created", body: response.body }
       end
 
       # GET /dossiers/{dossierId}/bank/enveloppes/{enveloppeKeyId} — Get envelope content.
@@ -79,7 +79,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_put("dossiers/#{@dossier_id}/bank/enveloppes/#{envelope_key_id.to_i}", envelope_data)
         handle_write_error!(response) unless response.success?
-        response.body
+        upsert_result(response)
       end
 
       # DELETE /dossiers/{dossierId}/bank/enveloppes/{enveloppeKeyId} — Remove an envelope.
@@ -95,7 +95,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/bank/enveloppes/#{envelope_key_id.to_i}/add", payment_data)
         handle_write_error!(response) unless response.success?
-        response.body
+        { status: "created", body: response.body }
       end
 
       # POST /dossiers/{dossierId}/bank/enveloppes/{enveloppeKeyId}/remove
@@ -103,7 +103,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/bank/enveloppes/#{envelope_key_id.to_i}/remove", payment_data)
         handle_write_error!(response) unless response.success?
-        response.body
+        { status: "removed", body: response.body }
       end
 
       # POST /dossiers/{dossierId}/bank/enveloppes/{enveloppeKeyId}/export

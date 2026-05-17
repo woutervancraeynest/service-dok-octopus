@@ -73,7 +73,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/journals/A", journal_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
-        { status: "created", journal: response.body }
+        { status: "created", body: response.body }
       end
 
       # PUT /dossiers/{dossierId}/journals/A — Update a buy journal.
@@ -89,7 +89,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/journals/V", journal_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
-        { status: "created", journal: response.body }
+        { status: "created", body: response.body }
       end
 
       # PUT /dossiers/{dossierId}/journals/V — Update a sell journal.
@@ -105,7 +105,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/journals/F", journal_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
-        { status: "created", journal: response.body }
+        { status: "created", body: response.body }
       end
 
       # PUT /dossiers/{dossierId}/journals/F — Update a financial journal.
@@ -121,7 +121,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/journals/D", journal_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
-        { status: "created", journal: response.body }
+        { status: "created", body: response.body }
       end
 
       # PUT /dossiers/{dossierId}/journals/D — Update a divers journal.
@@ -137,7 +137,7 @@ module OctopusClient
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/journals/L", journal_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
-        { status: "created", journal: response.body }
+        { status: "created", body: response.body }
       end
 
       # PUT /dossiers/{dossierId}/journals/L — Update a delivery journal.

@@ -19,20 +19,15 @@ module OctopusClient
       end
 
       # PUT /dossiers/{dossierId}/relations — Create or update a relation (upsert).
+      #
+      # Returns { status: "created", body: ... } or { status: "updated" } or { status: "success", body: ... }
       def create_or_update_relation(relation_data)
         ensure_dossier_connected!
 
         response = dossier_put("dossiers/#{@dossier_id}/relations", relation_data)
         handle_write_error!(response) unless [200, 201, 204].include?(response.status)
 
-        case response.status
-        when 201
-          { status: "created", relation: response.body }
-        when 204
-          { status: "updated" }
-        else
-          { status: "success", relation: response.body }
-        end
+        upsert_result(response)
       end
 
       # GET /dossiers/{dossierId}/relations/modified — Get modified relations.

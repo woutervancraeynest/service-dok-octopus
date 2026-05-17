@@ -32,7 +32,7 @@ module OctopusClient
         response = dossier_post("dossiers/#{@dossier_id}/invoices", invoice_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
 
-        { status: "created" }
+        { status: "created", body: response.body }
       end
 
       # PUT /dossiers/{dossierId}/invoices — Update an invoice.
@@ -115,7 +115,7 @@ module OctopusClient
         response = dossier_post("dossiers/#{@dossier_id}/invoices/send", send_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
 
-        response.body
+        { status: "sent", body: response.body }
       end
 
       # POST /dossiers/{dossierId}/invoices/send/testmail/{language} — Send test mail.
@@ -130,12 +130,23 @@ module OctopusClient
         end
 
         handle_write_error!(response) unless [200, 201].include?(response.status)
-        response.body
+        { status: "sent", body: response.body }
       end
 
       # POST /dossiers/{dossierId}/invoices/send/report/deliverystate
-      def get_invoice_delivery_states(selection_data)
+      #
+      # Query invoice delivery states. Accepts keyword args or a raw hash for advanced queries.
+      def get_invoice_delivery_states(bookyear_id: nil, journal_key: nil,
+                                       from_document_sequence_nr: nil, to_document_sequence_nr: nil,
+                                       **extra)
         ensure_dossier_connected!
+
+        selection_data = {}
+        selection_data["bookyearKey"] = { "id" => bookyear_id.to_i } if bookyear_id
+        selection_data["journalKey"] = journal_key if journal_key
+        selection_data["fromDocumentSequenceNr"] = from_document_sequence_nr.to_i if from_document_sequence_nr
+        selection_data["toDocumentSequenceNr"] = to_document_sequence_nr.to_i if to_document_sequence_nr
+        selection_data.merge!(extra)
 
         response = dossier_post("dossiers/#{@dossier_id}/invoices/send/report/deliverystate", selection_data)
         return handle_api_error!(response) unless response.success?

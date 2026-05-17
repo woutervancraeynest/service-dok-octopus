@@ -18,12 +18,16 @@ module OctopusClient
       end
 
       # GET /dossiers/{dossierId}/productgroups — Get all product groups.
-      def get_productgroups
+      #
+      # Aliases: get_productgroups (deprecated — use get_product_groups)
+      def get_product_groups
         ensure_dossier_connected!
         response = dossier_get("dossiers/#{@dossier_id}/productgroups")
         return handle_api_error!(response) unless response.success?
         response.body
       end
+
+      alias_method :get_productgroups, :get_product_groups
     end
   end
 end

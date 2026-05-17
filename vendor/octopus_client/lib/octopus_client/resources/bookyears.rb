@@ -26,7 +26,7 @@ module OctopusClient
         response = dossier_post("dossiers/#{@dossier_id}/bookyears", bookyear_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
 
-        { status: "created", bookyear: response.body }
+        { status: "created", body: response.body }
       end
 
       # PUT /dossiers/{dossierId}/bookyears — Update a bookyear.

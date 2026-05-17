@@ -25,7 +25,7 @@ module Tools
         {
           status: result[:status],
           message: result[:status] == "created" ? "Relation created successfully." : "Relation updated successfully.",
-          relation: result[:relation]
+          relation: result[:body]
         }
       end
     end

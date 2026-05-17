@@ -33,7 +33,7 @@ module OctopusClient
         response = dossier_post("dossiers/#{@dossier_id}/financialdiversbookings", payload)
         handle_write_error!(response) unless [200, 201].include?(response.status)
 
-        { status: "created" }
+        { status: "created", body: response.body }
       end
 
       # PUT /dossiers/{dossierId}/financialdiversbookings — Update a financial/divers booking.

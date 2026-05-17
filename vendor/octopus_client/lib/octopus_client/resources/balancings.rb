@@ -2,12 +2,16 @@ module OctopusClient
   class Client
     module Balancings
       # POST /dossiers/{dossierId}/balancings — Insert a balancing.
+      #
+      # Alias: create_balancing
       def insert_balancing(balancing_data)
         ensure_dossier_connected!
         response = dossier_post("dossiers/#{@dossier_id}/balancings", balancing_data)
         handle_write_error!(response) unless [200, 201].include?(response.status)
-        { status: "created" }
+        { status: "created", body: response.body }
       end
+
+      alias_method :create_balancing, :insert_balancing
 
       # DELETE /dossiers/{dossierId}/balancings/delete — Delete a balancing.
       def delete_balancing(balancing_item_data)
