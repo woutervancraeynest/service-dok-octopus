@@ -70,6 +70,11 @@ module Tools
         return { error: "Missing dossier_id in configuration. Please configure a dossier ID in your project settings." }
       end
 
+      unless config[:dossier_id].match?(/\A\d+\z/)
+        return { error: "Invalid dossier_id '#{config[:dossier_id]}': must be a numeric ID. " \
+                        "Use the list_dossiers tool to find available dossier IDs." }
+      end
+
       client = OctopusClient::Client.new(
         user: config[:user],
         password: config[:password],

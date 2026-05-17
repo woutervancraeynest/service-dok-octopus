@@ -43,6 +43,58 @@ RSpec.describe Tools::InsertBalancing do
       expect(request_stub).to have_been_requested
     end
 
+    it "returns error when document_keys is missing" do
+      result = described_class.call(
+        params: { "amount" => 100.0 },
+        context: octopus_context
+      )
+
+      expect(result[:error]).to include("document_keys")
+    end
+
+    it "returns error when document_keys has fewer than 2 documents" do
+      result = described_class.call(
+        params: {
+          "amount" => 100.0,
+          "document_keys" => [
+            { "bookyear_id" => 10, "journal_key" => "F1", "document_sequence_nr" => 1 }
+          ]
+        },
+        context: octopus_context
+      )
+
+      expect(result[:error]).to include("at least 2 documents")
+    end
+
+    it "returns error when amount is missing" do
+      result = described_class.call(
+        params: {
+          "document_keys" => [
+            { "bookyear_id" => 10, "journal_key" => "F1", "document_sequence_nr" => 1 },
+            { "bookyear_id" => 10, "journal_key" => "A1", "document_sequence_nr" => 2 }
+          ]
+        },
+        context: octopus_context
+      )
+
+      expect(result[:error]).to include("amount")
+    end
+
+    it "returns error when a document key is incomplete" do
+      result = described_class.call(
+        params: {
+          "amount" => 100.0,
+          "document_keys" => [
+            { "bookyear_id" => 10, "journal_key" => "F1", "document_sequence_nr" => 1 },
+            { "bookyear_id" => 10 }
+          ]
+        },
+        context: octopus_context
+      )
+
+      expect(result[:error]).to include("document_keys[1]")
+    end
+
     it "returns error when configuration is missing" do
       result = described_class.call(
         params: valid_params,

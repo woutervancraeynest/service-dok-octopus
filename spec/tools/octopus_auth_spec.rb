@@ -76,5 +76,21 @@ RSpec.describe Tools::OctopusAuth do
 
       expect(result[:error]).to include("Authentication failed")
     end
+
+    it "returns error when dossier_id is not numeric" do
+      context = {
+        "configuration" => {
+          "octopus_user" => "user",
+          "octopus_password" => "pass",
+          "software_house_id" => "uuid",
+          "dossier_id" => "abc"
+        }
+      }
+
+      result = Tools::GetBookyears.call(params: {}, context: context)
+
+      expect(result[:error]).to include("Invalid dossier_id")
+      expect(result[:error]).to include("numeric")
+    end
   end
 end
