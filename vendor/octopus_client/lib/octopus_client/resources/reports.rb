@@ -89,7 +89,7 @@ module OctopusClient
         data["periodeFrom"] = period_from.to_i if period_from
         data["periodeTo"] = period_to.to_i if period_to
         data["journalKey"] = journal_key if journal_key
-        data.merge!(extra) if extra.any?
+        data.merge!(extra.transform_keys(&:to_s)) if extra.any?
 
         data
       end
