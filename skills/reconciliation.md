@@ -47,17 +47,19 @@ Dit geeft alle bankboekingen terug. Elke boeking bevat:
 ### Stap 3: Openstaande facturen ophalen
 
 ```
-report_open_clients(bookyear_id) → Openstaande verkoopfacturen (klanten die nog moeten betalen)
-report_open_suppliers(bookyear_id) → Openstaande aankoopfacturen (leveranciers die betaald moeten worden)
+report_open_clients(bookyear_id: 10) → Openstaande verkoopfacturen (klanten die nog moeten betalen)
+report_open_suppliers(bookyear_id: 10) → Openstaande aankoopfacturen (leveranciers die betaald moeten worden)
 ```
 
-Deze rapporten geven per relatie de openstaande documenten met bedragen.
+**Belangrijk:** De parameter `bookyear_id` wordt als `fromBookyearKey` naar de API gestuurd. Optioneel kan `to_bookyear_id` meegegeven worden om een bereik van boekjaren op te vragen (bijv. alle openstaande posten van boekjaar 1 t/m 10).
+
+Als het rapport geen data vindt (HTTP 404), betekent dit dat er geen openstaande posten zijn voor dat boekjaar — dat is geen fout.
 
 Optioneel voor meer detail:
 ```
 get_unbalanced_invoices → Lijst van nog niet (volledig) afgepunte facturen
-list_buy_sell_bookings(bookyear_id, journal_key: "A1") → Alle aankoopboekingen met detail
-list_buy_sell_bookings(bookyear_id, journal_key: "V1") → Alle verkoopboekingen met detail
+list_buy_sell_bookings(bookyear_id: 10, journal_key: "A1") → Alle aankoopboekingen met detail
+list_buy_sell_bookings(bookyear_id: 10, journal_key: "V1") → Alle verkoopboekingen met detail
 ```
 
 ### Stap 4: Matching

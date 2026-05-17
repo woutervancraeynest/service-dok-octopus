@@ -1,6 +1,7 @@
 # Generate an open suppliers report from the configured Octopus dossier.
 #
-# Returns open supplier data for the specified period and bookyear.
+# Returns open supplier data showing unpaid/unbalanced invoices per supplier.
+# Useful for reconciliation: shows which supplier invoices are still outstanding.
 #
 module Tools
   class ReportOpenSuppliers
@@ -19,8 +20,11 @@ module Tools
       with_dossier_connection(context) do |client|
         result = client.report_open_suppliers(query_data)
 
+        return { report: [], total: 0 } if result.nil?
+
         {
-          report: result
+          report: result,
+          total: result.is_a?(Array) ? result.length : 1
         }
       end
     end
@@ -28,8 +32,12 @@ module Tools
     private
 
     def self.build_query_data(params)
+      from_id = params["bookyear_id"].to_i
+      to_id = (params["to_bookyear_id"] || params["bookyear_id"]).to_i
+
       data = {
-        "bookyearKey" => { "id" => params["bookyear_id"].to_i }
+        "fromBookyearKey" => { "id" => from_id },
+        "toBookyearKey" => { "id" => to_id }
       }
 
       data["periodeFrom"] = params["period_from"].to_i if params["period_from"]

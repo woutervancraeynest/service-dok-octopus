@@ -917,13 +917,17 @@
     },
     {
       "name": "report_history_accounts",
-      "description": "Generate a history accounts report from the configured Octopus dossier. Returns historical account data for the specified period and bookyear.",
+      "description": "Generate a history accounts report from the configured Octopus dossier. Returns historical account data for the specified bookyear range. Use bookyear_id as the starting bookyear; optionally set to_bookyear_id for a range.",
       "input_schema": {
         "type": "object",
         "properties": {
           "bookyear_id": {
             "type": "integer",
-            "description": "The bookyear ID for the report."
+            "description": "The starting bookyear ID (fromBookyearKey). Use get_bookyears to find available IDs."
+          },
+          "to_bookyear_id": {
+            "type": "integer",
+            "description": "The ending bookyear ID (toBookyearKey). Defaults to same as bookyear_id."
           },
           "period_from": {
             "type": "integer",
@@ -948,13 +952,17 @@
     },
     {
       "name": "report_open_accounts",
-      "description": "Generate an open accounts report from the configured Octopus dossier. Returns open account data for the specified period and bookyear.",
+      "description": "Generate an open accounts report from the configured Octopus dossier. Returns unbalanced account entries for the specified bookyear range.",
       "input_schema": {
         "type": "object",
         "properties": {
           "bookyear_id": {
             "type": "integer",
-            "description": "The bookyear ID for the report."
+            "description": "The starting bookyear ID (fromBookyearKey). Use get_bookyears to find available IDs."
+          },
+          "to_bookyear_id": {
+            "type": "integer",
+            "description": "The ending bookyear ID (toBookyearKey). Defaults to same as bookyear_id."
           },
           "period_from": {
             "type": "integer",
@@ -979,13 +987,17 @@
     },
     {
       "name": "report_history_clients",
-      "description": "Generate a history clients report from the configured Octopus dossier. Returns historical client data for the specified period and bookyear.",
+      "description": "Generate a history clients report from the configured Octopus dossier. Returns historical client transaction data for the specified bookyear range.",
       "input_schema": {
         "type": "object",
         "properties": {
           "bookyear_id": {
             "type": "integer",
-            "description": "The bookyear ID for the report."
+            "description": "The starting bookyear ID (fromBookyearKey). Use get_bookyears to find available IDs."
+          },
+          "to_bookyear_id": {
+            "type": "integer",
+            "description": "The ending bookyear ID (toBookyearKey). Defaults to same as bookyear_id."
           },
           "period_from": {
             "type": "integer",
@@ -1010,13 +1022,17 @@
     },
     {
       "name": "report_open_clients",
-      "description": "Generate an open clients report from the configured Octopus dossier. Returns open client data for the specified period and bookyear.",
+      "description": "Generate an open clients report from the configured Octopus dossier. Returns unpaid/unbalanced client invoices for the specified bookyear range. Essential for reconciliation: shows which client invoices still need payment matching.",
       "input_schema": {
         "type": "object",
         "properties": {
           "bookyear_id": {
             "type": "integer",
-            "description": "The bookyear ID for the report."
+            "description": "The starting bookyear ID (fromBookyearKey). Use get_bookyears to find available IDs."
+          },
+          "to_bookyear_id": {
+            "type": "integer",
+            "description": "The ending bookyear ID (toBookyearKey). Defaults to same as bookyear_id."
           },
           "period_from": {
             "type": "integer",
@@ -1041,13 +1057,17 @@
     },
     {
       "name": "report_history_suppliers",
-      "description": "Generate a history suppliers report from the configured Octopus dossier. Returns historical supplier data for the specified period and bookyear.",
+      "description": "Generate a history suppliers report from the configured Octopus dossier. Returns historical supplier transaction data for the specified bookyear range.",
       "input_schema": {
         "type": "object",
         "properties": {
           "bookyear_id": {
             "type": "integer",
-            "description": "The bookyear ID for the report."
+            "description": "The starting bookyear ID (fromBookyearKey). Use get_bookyears to find available IDs."
+          },
+          "to_bookyear_id": {
+            "type": "integer",
+            "description": "The ending bookyear ID (toBookyearKey). Defaults to same as bookyear_id."
           },
           "period_from": {
             "type": "integer",
@@ -1072,13 +1092,17 @@
     },
     {
       "name": "report_open_suppliers",
-      "description": "Generate an open suppliers report from the configured Octopus dossier. Returns open supplier data for the specified period and bookyear.",
+      "description": "Generate an open suppliers report from the configured Octopus dossier. Returns unpaid/unbalanced supplier invoices for the specified bookyear range. Essential for reconciliation: shows which supplier invoices still need payment matching.",
       "input_schema": {
         "type": "object",
         "properties": {
           "bookyear_id": {
             "type": "integer",
-            "description": "The bookyear ID for the report."
+            "description": "The starting bookyear ID (fromBookyearKey). Use get_bookyears to find available IDs."
+          },
+          "to_bookyear_id": {
+            "type": "integer",
+            "description": "The ending bookyear ID (toBookyearKey). Defaults to same as bookyear_id."
           },
           "period_from": {
             "type": "integer",
@@ -1103,13 +1127,17 @@
     },
     {
       "name": "report_history_cost_centres",
-      "description": "Generate a history cost centres report from the configured Octopus dossier. Returns historical cost centre data for the specified period and bookyear.",
+      "description": "Generate a history cost centres report from the configured Octopus dossier. Returns historical cost centre data for the specified bookyear range.",
       "input_schema": {
         "type": "object",
         "properties": {
           "bookyear_id": {
             "type": "integer",
-            "description": "The bookyear ID for the report."
+            "description": "The starting bookyear ID (fromBookyearKey). Use get_bookyears to find available IDs."
+          },
+          "to_bookyear_id": {
+            "type": "integer",
+            "description": "The ending bookyear ID (toBookyearKey). Defaults to same as bookyear_id."
           },
           "period_from": {
             "type": "integer",

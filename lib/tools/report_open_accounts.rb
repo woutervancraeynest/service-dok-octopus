@@ -1,6 +1,6 @@
 # Generate an open accounts report from the configured Octopus dossier.
 #
-# Returns open account data for the specified period and bookyear.
+# Returns open account data showing unbalanced entries per account.
 #
 module Tools
   class ReportOpenAccounts
@@ -19,8 +19,11 @@ module Tools
       with_dossier_connection(context) do |client|
         result = client.report_open_accounts(query_data)
 
+        return { report: [], total: 0 } if result.nil?
+
         {
-          report: result
+          report: result,
+          total: result.is_a?(Array) ? result.length : 1
         }
       end
     end
@@ -28,8 +31,12 @@ module Tools
     private
 
     def self.build_query_data(params)
+      from_id = params["bookyear_id"].to_i
+      to_id = (params["to_bookyear_id"] || params["bookyear_id"]).to_i
+
       data = {
-        "bookyearKey" => { "id" => params["bookyear_id"].to_i }
+        "fromBookyearKey" => { "id" => from_id },
+        "toBookyearKey" => { "id" => to_id }
       }
 
       data["periodeFrom"] = params["period_from"].to_i if params["period_from"]
