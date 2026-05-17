@@ -14,10 +14,13 @@ module Tools
         return { error: "Missing required parameters: #{missing.join(", ")}. Provide a bookyear_id." }
       end
 
-      selection_data = build_selection_data(params)
-
       with_dossier_connection(context) do |client|
-        result = client.get_invoice_delivery_states(selection_data)
+        result = client.get_invoice_delivery_states(
+          bookyear_id: params["bookyear_id"].to_i,
+          journal_key: params["journal_key"],
+          from_document_sequence_nr: params["from_document_sequence_nr"],
+          to_document_sequence_nr: params["to_document_sequence_nr"]
+        )
 
         return { delivery_states: [], total: 0 } if result.nil? || result.empty?
 
@@ -26,20 +29,6 @@ module Tools
           total: result.length
         }
       end
-    end
-
-    private
-
-    def self.build_selection_data(params)
-      data = {
-        "bookyearKey" => { "id" => params["bookyear_id"].to_i }
-      }
-
-      data["journalKey"] = params["journal_key"] if params["journal_key"]
-      data["fromDocumentSequenceNr"] = params["from_document_sequence_nr"].to_i if params["from_document_sequence_nr"]
-      data["toDocumentSequenceNr"] = params["to_document_sequence_nr"].to_i if params["to_document_sequence_nr"]
-
-      data
     end
   end
 end
