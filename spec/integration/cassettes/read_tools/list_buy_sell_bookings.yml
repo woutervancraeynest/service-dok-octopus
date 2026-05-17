@@ -8,7 +8,7 @@ http_interactions:
       string: '{"user":"<OCTOPUS_USER>","password":"<OCTOPUS_PASSWORD>"}'
     headers:
       User-Agent:
-      - Faraday v2.14.1
+      - Faraday v2.14.2
       Softwarehouseuuid:
       - "<SOFTWARE_HOUSE_ID>"
       Content-Type:
@@ -27,11 +27,11 @@ http_interactions:
       Content-Length:
       - '237'
       Date:
-      - Mon, 11 May 2026 20:26:37 GMT
+      - Sun, 17 May 2026 09:22:24 GMT
     body:
       encoding: UTF-8
       string: '{"token":"<AUTH_TOKEN>"}'
-  recorded_at: Mon, 11 May 2026 20:26:38 GMT
+  recorded_at: Sun, 17 May 2026 09:22:24 GMT
 - request:
     method: post
     uri: https://service.inaras.be/octopus-rest-api/v1/dossiers?dossierId=49555
@@ -40,7 +40,7 @@ http_interactions:
       string: ''
     headers:
       User-Agent:
-      - Faraday v2.14.1
+      - Faraday v2.14.2
       Token:
       - "<AUTH_TOKEN>"
       Content-Length:
@@ -59,11 +59,11 @@ http_interactions:
       Content-Length:
       - '276'
       Date:
-      - Mon, 11 May 2026 20:26:38 GMT
+      - Sun, 17 May 2026 09:22:24 GMT
     body:
       encoding: UTF-8
       string: '{"Dossiertoken":"<DOSSIER_TOKEN>"}'
-  recorded_at: Mon, 11 May 2026 20:26:38 GMT
+  recorded_at: Sun, 17 May 2026 09:22:24 GMT
 - request:
     method: get
     uri: https://service.inaras.be/octopus-rest-api/v1/dossiers/49555/bookyears
@@ -72,7 +72,7 @@ http_interactions:
       string: ''
     headers:
       User-Agent:
-      - Faraday v2.14.1
+      - Faraday v2.14.2
       Dossiertoken:
       - "<DOSSIER_TOKEN>"
       Accept-Encoding:
@@ -89,11 +89,11 @@ http_interactions:
       Content-Length:
       - '1018'
       Date:
-      - Mon, 11 May 2026 20:26:38 GMT
+      - Sun, 17 May 2026 09:22:25 GMT
     body:
       encoding: UTF-8
       string: '[{"bookyearDescription":"2000","bookyearKey":{"id":1},"closed":false,"endDate":"2000-12-31","periods":[{"bookyearPeriod":200001,"endDate":"2000-01-31","startDate":"2000-01-01"},{"bookyearPeriod":200002,"endDate":"2000-02-29","startDate":"2000-02-01"},{"bookyearPeriod":200003,"endDate":"2000-03-31","startDate":"2000-03-01"},{"bookyearPeriod":200004,"endDate":"2000-04-30","startDate":"2000-04-01"},{"bookyearPeriod":200005,"endDate":"2000-05-31","startDate":"2000-05-01"},{"bookyearPeriod":200006,"endDate":"2000-06-30","startDate":"2000-06-01"},{"bookyearPeriod":200007,"endDate":"2000-07-31","startDate":"2000-07-01"},{"bookyearPeriod":200008,"endDate":"2000-08-31","startDate":"2000-08-01"},{"bookyearPeriod":200009,"endDate":"2000-09-30","startDate":"2000-09-01"},{"bookyearPeriod":200010,"endDate":"2000-10-31","startDate":"2000-10-01"},{"bookyearPeriod":200011,"endDate":"2000-11-30","startDate":"2000-11-01"},{"bookyearPeriod":200012,"endDate":"2000-12-31","startDate":"2000-12-01"}],"startDate":"2000-01-01"}]'
-  recorded_at: Mon, 11 May 2026 20:26:38 GMT
+  recorded_at: Sun, 17 May 2026 09:22:25 GMT
 - request:
     method: post
     uri: https://service.inaras.be/octopus-rest-api/v1/authentication
@@ -102,7 +102,7 @@ http_interactions:
       string: '{"user":"<OCTOPUS_USER>","password":"<OCTOPUS_PASSWORD>"}'
     headers:
       User-Agent:
-      - Faraday v2.14.1
+      - Faraday v2.14.2
       Softwarehouseuuid:
       - "<SOFTWARE_HOUSE_ID>"
       Content-Type:
@@ -121,11 +121,11 @@ http_interactions:
       Content-Length:
       - '237'
       Date:
-      - Mon, 11 May 2026 20:26:38 GMT
+      - Sun, 17 May 2026 09:22:25 GMT
     body:
       encoding: UTF-8
       string: '{"token":"<AUTH_TOKEN>"}'
-  recorded_at: Mon, 11 May 2026 20:26:38 GMT
+  recorded_at: Sun, 17 May 2026 09:22:25 GMT
 - request:
     method: post
     uri: https://service.inaras.be/octopus-rest-api/v1/dossiers?dossierId=49555
@@ -134,7 +134,7 @@ http_interactions:
       string: ''
     headers:
       User-Agent:
-      - Faraday v2.14.1
+      - Faraday v2.14.2
       Token:
       - "<AUTH_TOKEN>"
       Content-Length:
@@ -153,11 +153,11 @@ http_interactions:
       Content-Length:
       - '276'
       Date:
-      - Mon, 11 May 2026 20:26:38 GMT
+      - Sun, 17 May 2026 09:22:25 GMT
     body:
       encoding: UTF-8
       string: '{"Dossiertoken":"<DOSSIER_TOKEN>"}'
-  recorded_at: Mon, 11 May 2026 20:26:38 GMT
+  recorded_at: Sun, 17 May 2026 09:22:25 GMT
 - request:
     method: get
     uri: https://service.inaras.be/octopus-rest-api/v1/dossiers/49555/buysellbookings?bookyearKeyId=1
@@ -166,7 +166,7 @@ http_interactions:
       string: ''
     headers:
       User-Agent:
-      - Faraday v2.14.1
+      - Faraday v2.14.2
       Dossiertoken:
       - "<DOSSIER_TOKEN>"
       Accept-Encoding:
@@ -183,9 +183,52 @@ http_interactions:
       Content-Length:
       - '56'
       Date:
-      - Mon, 11 May 2026 20:26:38 GMT
+      - Sun, 17 May 2026 09:22:25 GMT
     body:
       encoding: UTF-8
       string: '{"technicalInfo":"Invalid or missing parameters passed"}'
-  recorded_at: Mon, 11 May 2026 20:26:38 GMT
+  recorded_at: Sun, 17 May 2026 09:22:25 GMT
+- request:
+    method: get
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers/49555/buysellbookings/modified?bookyearId=1&modifiedTimeStamp=2000-01-01%2000:00:00.000
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Dossiertoken:
+      - "<DOSSIER_TOKEN>"
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '4092'
+      Date:
+      - Sun, 17 May 2026 09:22:25 GMT
+    body:
+      encoding: UTF-8
+      string: '[{"amount":5706.12,"bookingLines":[{"accountKey":230000,"baseAmount":4715.8,"comment":"Stroomgenerator
+        BELLEKENS MECHELEN NV","vatAmount":990.32,"vatCodeKey":"I21","vatRecupPercentage":100.0}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"comment":"Stroomgenerator","currencyCode":"EUR","documentDate":"2000-11-30","documentSequenceNr":6,"exchangeRate":1.0,"expiryDate":"2000-11-30","journalKey":"A1","paymentMethod":1,"reference":"Stroomgenerator","relationIdentificationServiceData":{"externalRelationId":0,"relationKey":{"id":27}}},{"amount":2544.0,"bookingLines":[{"accountKey":700100,"baseAmount":2400.0,"comment":"Lever.
+        dd 01012000 De Zeesnoepers","vatAmount":144.0,"vatCodeKey":"06"}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200003,"comment":"Levering","currencyCode":"EUR","documentDate":"2000-03-01","documentSequenceNr":1,"exchangeRate":1.0,"expiryDate":"2000-03-01","journalKey":"V1","paymentMethod":0,"reference":"Levering","relationIdentificationServiceData":{"externalRelationId":0,"relationKey":{"id":16}}},{"amount":496.1,"bookingLines":[{"accountKey":611900,"baseAmount":410.0,"comment":"F.
+        09-10/6435 - Octopus: periode 1/7/2010-30/6/2010 Inaras","vatAmount":86.1,"vatCodeKey":"D21","vatRecupPercentage":100.0}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"comment":"F.
+        09-10/6435 - Octopus: periode 1/7/2010-30/6/2010","currencyCode":"EUR","documentDate":"2000-01-16","documentSequenceNr":1,"exchangeRate":1.0,"expiryDate":"2000-02-15","journalKey":"A1","paymentMethod":1,"reference":"+++251/8016/43531+++","relationIdentificationServiceData":{"externalRelationId":0,"relationKey":{"id":18}}},{"amount":321.0,"bookingLines":[{"accountKey":611000,"baseAmount":265.29,"comment":"F
+        679/99 - Bureelben. Makro","vatAmount":55.71,"vatCodeKey":"D21","vatRecupPercentage":100.0}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"comment":"F
+        679/99 - Bureelben.","currencyCode":"EUR","documentDate":"2000-01-17","documentSequenceNr":2,"exchangeRate":1.0,"expiryDate":"2000-01-17","journalKey":"A1","paymentMethod":0,"reference":"F
+        679/99 - Bureelben.","relationIdentificationServiceData":{"externalRelationId":0,"relationKey":{"id":19}}},{"amount":435.6,"bookingLines":[{"accountKey":700300,"baseAmount":360.0,"comment":"levering
+        Starlet Productions","vatAmount":75.6,"vatCodeKey":"21"}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"comment":"levering","currencyCode":"EUR","documentDate":"2000-01-02","documentSequenceNr":2,"exchangeRate":1.0,"expiryDate":"2000-01-02","journalKey":"V1","paymentMethod":0,"reference":"levering","relationIdentificationServiceData":{"externalRelationId":0,"relationKey":{"id":26}}},{"amount":0.0,"bookingLines":[],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"comment":"","currencyCode":"EUR","documentDate":"2000-12-31","documentSequenceNr":5,"exchangeRate":1.0,"expiryDate":"2000-12-31","journalKey":"A1","paymentMethod":1,"reference":"","relationIdentificationServiceData":{"externalRelationId":0,"relationKey":{"id":13}}},{"amount":34.0,"bookingLines":[{"accountKey":611900,"baseAmount":28.1,"comment":"09-1254
+        - Hosting domain name Firstserved","vatAmount":5.9,"vatCodeKey":"D21","vatRecupPercentage":100.0}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"comment":"09-1254
+        - Hosting domain name","currencyCode":"EUR","documentDate":"2000-01-17","documentSequenceNr":3,"exchangeRate":1.0,"expiryDate":"2000-01-17","journalKey":"A1","paymentMethod":0,"reference":"09-1254
+        - Hosting domain name","relationIdentificationServiceData":{"externalRelationId":0,"relationKey":{"id":17}}},{"amount":679.0,"bookingLines":[{"accountKey":230000,"baseAmount":561.16,"comment":"F.
+        678/999 - Notebook Lenovo Makro","vatAmount":117.84,"vatCodeKey":"I21","vatRecupPercentage":100.0}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"comment":"F.
+        678/999 - Notebook Lenovo","currencyCode":"EUR","documentDate":"2000-01-17","documentSequenceNr":4,"exchangeRate":1.0,"expiryDate":"2000-01-17","journalKey":"A1","paymentMethod":0,"reference":"","relationIdentificationServiceData":{"externalRelationId":0,"relationKey":{"id":19}}}]'
+  recorded_at: Sun, 17 May 2026 09:22:25 GMT
 recorded_with: VCR 6.4.0
