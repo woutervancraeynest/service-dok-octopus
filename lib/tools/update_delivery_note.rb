@@ -39,18 +39,22 @@ module Tools
         "bookyearKey" => { "id" => params["bookyear_id"].to_i },
         "journalKey" => params["journal_key"],
         "documentSequenceNr" => params["document_sequence_nr"].to_i,
-        "periodNr" => params["period_nr"].to_i,
+        "bookyearPeriodeNr" => params["period_nr"].to_i,
         "documentDate" => params["document_date"],
         "expiryDate" => params["expiry_date"],
-        "currencyCode" => params["currency_code"] || "EUR"
+        "currencyCode" => params["currency_code"] || "EUR",
+        "exchangeRate" => params["exchange_rate"]&.to_f || 1.0
       }
 
       # Relation identification
+      identification = {}
       if params["relation_id"]
-        data["relationKey"] = { "id" => params["relation_id"].to_i }
-      elsif params["external_relation_id"]
-        data["externalRelationId"] = params["external_relation_id"].to_i
+        identification["relationKey"] = { "id" => params["relation_id"].to_i }
       end
+      if params["external_relation_id"]
+        identification["externalRelationId"] = params["external_relation_id"].to_i
+      end
+      data["relationIdentificationServiceData"] = identification unless identification.empty?
 
       # Optional fields
       data["reference"] = params["reference"] if params["reference"]
@@ -58,7 +62,7 @@ module Tools
       data["orderReference"] = params["order_reference"] if params["order_reference"]
 
       # Delivery lines
-      data["deliveryLines"] = params["delivery_lines"].map do |line|
+      data["deliveryNoteLines"] = params["delivery_lines"].map do |line|
         build_delivery_line(line)
       end
 
@@ -70,13 +74,13 @@ module Tools
         "description" => line["description"],
         "count" => line["count"].to_f,
         "unitPrice" => line["unit_price"].to_f,
-        "vatCode" => line["vat_code"]
+        "vatCodeKey" => line["vat_code"]
       }
 
       line_data["unit"] = line["unit"] if line["unit"]
       line_data["bookingAccountNr"] = line["booking_account_nr"].to_i if line["booking_account_nr"]
       line_data["discountPercentage"] = line["discount_percentage"].to_f if line["discount_percentage"]
-      line_data["productNr"] = line["product_nr"] if line["product_nr"]
+      line_data["externProductNr"] = line["product_nr"] if line["product_nr"]
       line_data["costCentreKey"] = { "id" => line["cost_centre_id"].to_i } if line["cost_centre_id"]
 
       line_data

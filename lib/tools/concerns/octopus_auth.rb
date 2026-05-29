@@ -18,6 +18,7 @@
 module Tools
   module OctopusAuth
     REQUIRED_CONFIG_KEYS = %w[octopus_user octopus_password software_house_id].freeze
+    MAX_GATEWAY_RETRIES = 2
 
     # Extract and validate configuration from context.
     # Returns a hash with symbolized keys.
@@ -41,15 +42,25 @@ module Tools
 
     # Build an authenticated OctopusClient.
     # Yields the client and returns the block result.
+    # Retries on gateway errors (502, 503, 504) with exponential backoff.
     def with_octopus_client(context)
       config = extract_config(context)
-      client = OctopusClient::Client.new(
-        user: config[:user],
-        password: config[:password],
-        software_house_id: config[:software_house_id]
-      )
-      client.authenticate
-      yield client
+      retries = 0
+
+      begin
+        client = OctopusClient::Client.new(
+          user: config[:user],
+          password: config[:password],
+          software_house_id: config[:software_house_id]
+        )
+        client.authenticate
+        yield client
+      rescue OctopusClient::AuthenticationError, OctopusClient::ApiError => e
+        raise unless gateway_error?(e) && retries < MAX_GATEWAY_RETRIES
+        retries += 1
+        sleep(retries)
+        retry
+      end
     rescue OctopusClient::ConfigurationError => e
       { error: e.message }
     rescue OctopusClient::AuthenticationError => e
@@ -63,6 +74,10 @@ module Tools
     # Authenticate + connect to the configured dossier.
     # Yields the client and returns the block result.
     # The dossier_id is taken from context configuration.
+    #
+    # Retries automatically on gateway errors (502, 503, 504) with
+    # exponential backoff (1s, 2s). These are transient server-side
+    # issues that typically resolve on retry.
     def with_dossier_connection(context)
       config = extract_config(context)
 
@@ -75,14 +90,23 @@ module Tools
                         "Use the list_dossiers tool to find available dossier IDs." }
       end
 
-      client = OctopusClient::Client.new(
-        user: config[:user],
-        password: config[:password],
-        software_house_id: config[:software_house_id]
-      )
-      client.authenticate
-      client.connect_dossier(config[:dossier_id])
-      yield client
+      retries = 0
+
+      begin
+        client = OctopusClient::Client.new(
+          user: config[:user],
+          password: config[:password],
+          software_house_id: config[:software_house_id]
+        )
+        client.authenticate
+        client.connect_dossier(config[:dossier_id])
+        yield client
+      rescue OctopusClient::AuthenticationError, OctopusClient::ApiError => e
+        raise unless gateway_error?(e) && retries < MAX_GATEWAY_RETRIES
+        retries += 1
+        sleep(retries)
+        retry
+      end
     rescue OctopusClient::ConfigurationError => e
       { error: e.message }
     rescue OctopusClient::AuthenticationError => e
@@ -91,6 +115,14 @@ module Tools
       { error: "Octopus API error: #{e.message}" }
     rescue Faraday::Error => e
       { error: "Connection error: #{e.message}" }
+    end
+
+    private
+
+    # Check if an error is a gateway error (502, 503, 504) that is
+    # worth retrying. These are transient server-side issues.
+    def gateway_error?(error)
+      error.message =~ /HTTP 50[234]/
     end
   end
 end

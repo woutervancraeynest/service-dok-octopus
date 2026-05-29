@@ -304,7 +304,8 @@
                   "type": "integer",
                   "description": "Cost centre ID (optional)"
                 }
-              }
+              },
+              "required": ["account_key", "base_amount", "vat_code", "vat_amount"]
             }
           }
         },
@@ -412,7 +413,8 @@
                   "type": "integer",
                   "description": "Cost centre ID (optional)"
                 }
-              }
+              },
+              "required": ["description", "count", "unit_price", "vat_code"]
             }
           }
         },
@@ -1369,7 +1371,8 @@
                   "type": "integer",
                   "description": "Cost centre ID (optional)"
                 }
-              }
+              },
+              "required": ["account_key", "base_amount", "vat_code", "vat_amount"]
             }
           }
         },
@@ -1477,7 +1480,8 @@
                   "type": "integer",
                   "description": "Cost centre ID (optional)"
                 }
-              }
+              },
+              "required": ["description", "count", "unit_price", "vat_code"]
             }
           }
         },
@@ -1658,7 +1662,8 @@
                   "type": "integer",
                   "description": "Cost centre ID (optional)"
                 }
-              }
+              },
+              "required": ["description", "count", "unit_price", "vat_code"]
             }
           }
         },
@@ -1766,7 +1771,8 @@
                   "type": "integer",
                   "description": "Cost centre ID (optional)"
                 }
-              }
+              },
+              "required": ["description", "count", "unit_price", "vat_code"]
             }
           }
         },
@@ -1814,10 +1820,12 @@
                   "type": "integer",
                   "description": "Document sequence number within the journal"
                 }
-              }
+              },
+              "required": ["bookyear_id", "journal_key", "document_sequence_nr"]
             }
           }
-        }
+        },
+        "required": ["amount", "document_keys"]
       },
       "annotations": {
         "read_only_hint": false,
@@ -1865,7 +1873,8 @@
                   "type": "integer",
                   "description": "Document sequence number"
                 }
-              }
+              },
+              "required": ["bookyear_id", "journal_key", "document_sequence_nr"]
             }
           },
           "bookyear_id": {

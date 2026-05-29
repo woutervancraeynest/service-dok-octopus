@@ -32,11 +32,13 @@ RSpec.describe Tools::UpdateDeliveryNote do
       stub_octopus_full_auth
       request_stub = stub_request(:put, "#{OctopusClient::BASE_URL}/dossiers/42/deliverynotes")
         .with { |req|
-          body = JSON.parse(req.body)
-          body["bookyearKey"]["id"] == 1 &&
-            body["journalKey"] == "L1" &&
-            body["relationKey"]["id"] == 10 &&
-            body["deliveryLines"][0]["description"] == "Widget"
+          data = JSON.parse(req.body)
+          data["bookyearKey"]["id"] == 1 &&
+            data["journalKey"] == "L1" &&
+            data["bookyearPeriodeNr"] == 3 &&
+            data["exchangeRate"] == 1.0 &&
+            data["relationIdentificationServiceData"]["relationKey"]["id"] == 10 &&
+            data["deliveryNoteLines"][0]["description"] == "Widget"
         }
         .to_return(status: 204, body: "", headers: {})
 

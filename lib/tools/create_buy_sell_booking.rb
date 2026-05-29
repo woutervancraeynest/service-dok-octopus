@@ -74,11 +74,12 @@ module Tools
     end
 
     def self.build_booking_line(line)
-      result = {}
-      result["accountKey"] = line["account_key"].to_i if line["account_key"]
-      result["baseAmount"] = line["base_amount"].to_f if line["base_amount"]
-      result["vatCodeKey"] = line["vat_code"] if line["vat_code"]
-      result["vatAmount"] = line["vat_amount"].to_f if line["vat_amount"]
+      result = {
+        "accountKey" => line["account_key"].to_i,
+        "baseAmount" => line["base_amount"].to_f,
+        "vatCodeKey" => line["vat_code"],
+        "vatAmount" => line["vat_amount"].to_f
+      }
       result["comment"] = line["comment"] if line["comment"]
       if line["cost_centre_id"]
         result["costCentreKey"] = { "id" => line["cost_centre_id"].to_i }

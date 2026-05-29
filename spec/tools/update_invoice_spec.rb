@@ -32,17 +32,18 @@ RSpec.describe Tools::UpdateInvoice do
       stub_octopus_full_auth
       request_stub = stub_request(:put, "#{OctopusClient::BASE_URL}/dossiers/42/invoices")
         .with { |req|
-          body = JSON.parse(req.body)
-          data = body["invoiceServiceData"]
+          data = JSON.parse(req.body)
           data["bookyearKey"]["id"] == 1 &&
             data["journalKey"] == "V1" &&
             data["documentSequenceNr"] == 5 &&
+            data["bookyearPeriodeNr"] == 3 &&
             data["currencyCode"] == "EUR" &&
-            data["relationKey"]["id"] == 10 &&
+            data["exchangeRate"] == 1.0 &&
+            data["relationIdentificationServiceData"]["relationKey"]["id"] == 10 &&
             data["invoiceLines"][0]["description"] == "Consulting" &&
             data["invoiceLines"][0]["count"] == 10.0 &&
             data["invoiceLines"][0]["unitPrice"] == 100.0 &&
-            data["invoiceLines"][0]["vatCode"] == "21"
+            data["invoiceLines"][0]["vatCodeKey"] == "21"
         }
         .to_return(status: 204, body: "", headers: {})
 

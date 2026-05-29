@@ -30,13 +30,14 @@ RSpec.describe Tools::UpdateBuySellBooking do
       stub_octopus_full_auth
       request_stub = stub_request(:put, "#{OctopusClient::BASE_URL}/dossiers/42/buysellbookings")
         .with { |req|
-          body = JSON.parse(req.body)
-          data = body["buySellBookingServiceData"]
+          data = JSON.parse(req.body)
           data["bookyearKey"]["id"] == 1 &&
             data["journalKey"] == "A1" &&
             data["documentSequenceNr"] == 5 &&
+            data["bookyearPeriodeNr"] == 3 &&
             data["amount"] == 121.0 &&
-            data["relationKey"]["id"] == 10
+            data["exchangeRate"] == 1.0 &&
+            data["relationIdentificationServiceData"]["relationKey"]["id"] == 10
         }
         .to_return(status: 204, body: "", headers: {})
 

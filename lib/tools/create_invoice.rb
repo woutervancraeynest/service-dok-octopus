@@ -74,12 +74,13 @@ module Tools
     end
 
     def self.build_invoice_line(line)
-      result = {}
-      result["description"] = line["description"] if line["description"]
-      result["count"] = line["count"].to_f if line["count"]
-      result["unitPrice"] = line["unit_price"].to_f if line["unit_price"]
+      result = {
+        "description" => line["description"],
+        "count" => line["count"].to_f,
+        "unitPrice" => line["unit_price"].to_f,
+        "vatCodeKey" => line["vat_code"]
+      }
       result["unit"] = line["unit"] if line["unit"]
-      result["vatCodeKey"] = line["vat_code"] if line["vat_code"]
       result["bookingAccountNr"] = line["booking_account_nr"].to_i if line["booking_account_nr"]
       result["discountPercentage"] = line["discount_percentage"].to_f if line["discount_percentage"]
       result["externProductNr"] = line["product_nr"] if line["product_nr"]

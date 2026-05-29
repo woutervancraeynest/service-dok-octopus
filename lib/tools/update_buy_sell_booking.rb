@@ -36,19 +36,23 @@ module Tools
         "bookyearKey" => { "id" => params["bookyear_id"].to_i },
         "journalKey" => params["journal_key"],
         "documentSequenceNr" => params["document_sequence_nr"].to_i,
-        "periodNr" => params["period_nr"].to_i,
+        "bookyearPeriodeNr" => params["period_nr"].to_i,
         "documentDate" => params["document_date"],
         "expiryDate" => params["expiry_date"],
         "amount" => params["amount"].to_f,
-        "currencyCode" => params["currency_code"] || "EUR"
+        "currencyCode" => params["currency_code"] || "EUR",
+        "exchangeRate" => params["exchange_rate"]&.to_f || 1.0
       }
 
       # Relation identification
+      identification = {}
       if params["relation_id"]
-        data["relationKey"] = { "id" => params["relation_id"].to_i }
-      elsif params["external_relation_id"]
-        data["externalRelationId"] = params["external_relation_id"].to_i
+        identification["relationKey"] = { "id" => params["relation_id"].to_i }
       end
+      if params["external_relation_id"]
+        identification["externalRelationId"] = params["external_relation_id"].to_i
+      end
+      data["relationIdentificationServiceData"] = identification unless identification.empty?
 
       # Optional fields
       data["reference"] = params["reference"] if params["reference"]
@@ -62,14 +66,14 @@ module Tools
         end
       end
 
-      { "buySellBookingServiceData" => data }
+      data
     end
 
     def self.build_booking_line(line)
       line_data = {
         "accountKey" => line["account_key"].to_i,
         "baseAmount" => line["base_amount"].to_f,
-        "vatCode" => line["vat_code"],
+        "vatCodeKey" => line["vat_code"],
         "vatAmount" => line["vat_amount"].to_f
       }
 
