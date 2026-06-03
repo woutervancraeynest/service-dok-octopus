@@ -6,6 +6,8 @@ Koppel bankbetalingen aan openstaande facturen in Octopus. Identificeer welke be
 
 ## Achtergrond
 
+De `insert_balancing` tool is volledig functioneel en heeft geen bekende blokkerende issues. De Octopus API werkt op **document-niveau** — je koppelt documenten (bankboeking + factuur) met een bedrag. Er zijn geen expliciete debet-/credit-keys nodig op lijnniveau; de API bepaalt dit automatisch op basis van de gekoppelde documenten.
+
 In Octopus wordt een "afpunting" (balancing) gebruikt om een bankboeking (F-journal) te koppelen aan een factuur (A-journal voor aankopen, V-journal voor verkopen). Bankafschriften worden dagelijks automatisch via CODA geïmporteerd en verschijnen als financiële boekingen in de F-journals.
 
 ### Terminologie
