@@ -24,6 +24,7 @@
 module Tools
   class DeleteBalancing
     extend OctopusAuth
+    extend WriteLogging
 
     VALID_MODES = %w[item bookingline document].freeze
     REQUIRED_KEY_FIELDS = %w[bookyear_id journal_key document_sequence_nr].freeze
@@ -39,7 +40,7 @@ module Tools
       return { error: error } if error
 
       with_dossier_connection(context) do |client|
-        begin
+        with_write_logging(name: "delete_balancing/#{mode}", body: body) do
           case mode
           when "item"        then client.delete_balancing(body)
           when "bookingline" then client.delete_balancing_by_bookingline(body)
@@ -48,16 +49,7 @@ module Tools
 
           {
             status: "deleted",
-            message: "Balancing deleted successfully (mode: #{mode}).",
-            sent_body: body
-          }
-        rescue OctopusClient::ApiError => e
-          $stderr.puts "[delete_balancing/#{mode}] Octopus rejected request"
-          $stderr.puts "[delete_balancing/#{mode}] body: #{body.to_json}"
-          $stderr.puts "[delete_balancing/#{mode}] error: #{e.message}"
-          {
-            error: "Octopus API error: #{e.message}",
-            sent_body: body
+            message: "Balancing deleted successfully (mode: #{mode})."
           }
         end
       end

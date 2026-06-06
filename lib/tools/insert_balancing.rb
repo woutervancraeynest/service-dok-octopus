@@ -25,6 +25,7 @@
 module Tools
   class InsertBalancing
     extend OctopusAuth
+    extend WriteLogging
 
     REQUIRED_KEY_FIELDS = %w[bookyear_id journal_key document_sequence_nr].freeze
 
@@ -35,21 +36,9 @@ module Tools
       balancing_data = build_balancing_data(params)
 
       with_dossier_connection(context) do |client|
-        begin
+        with_write_logging(name: "insert_balancing", body: balancing_data) do
           client.insert_balancing(balancing_data)
-          {
-            status: "created",
-            message: "Balancing inserted successfully.",
-            sent_body: balancing_data
-          }
-        rescue OctopusClient::ApiError => e
-          $stderr.puts "[insert_balancing] Octopus rejected request"
-          $stderr.puts "[insert_balancing] body: #{balancing_data.to_json}"
-          $stderr.puts "[insert_balancing] error: #{e.message}"
-          {
-            error: "Octopus API error: #{e.message}",
-            sent_body: balancing_data
-          }
+          { status: "created", message: "Balancing inserted successfully." }
         end
       end
     end
