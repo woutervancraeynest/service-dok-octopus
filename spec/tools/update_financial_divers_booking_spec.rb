@@ -29,20 +29,28 @@ RSpec.describe Tools::UpdateFinancialDiversBooking do
 
     it "sends correctly formatted data" do
       stub_octopus_full_auth
-      request_stub = stub_request(:put, "#{OctopusClient::BASE_URL}/dossiers/42/financialdiversbookings")
-        .with { |req|
-          body = JSON.parse(req.body)
-          body["bookyearKey"]["id"] == 1 &&
-            body["journalKey"] == "F1" &&
-            body["bookingLines"].length == 2 &&
-            body["bookingLines"][0]["type"] == "A" &&
-            body["bookingLines"][0]["accountKey"] == 550000
-        }
+      captured_body = nil
+      stub_request(:put, "#{OctopusClient::BASE_URL}/dossiers/42/financialdiversbookings")
+        .with { |req| captured_body = JSON.parse(req.body); true }
         .to_return(status: 204, body: "", headers: {})
 
       described_class.call(params: valid_params, context: octopus_context)
 
-      expect(request_stub).to have_been_requested
+      # Spec-mandated field names (was the bug: periodNr instead of bookyearPeriodeNr,
+      # and exchangeRate was missing entirely).
+      expect(captured_body["bookyearKey"]).to eq("id" => 1)
+      expect(captured_body["journalKey"]).to eq("F1")
+      expect(captured_body["bookyearPeriodeNr"]).to eq(3)
+      expect(captured_body["exchangeRate"]).to eq(1.0)
+      expect(captured_body["bookingLines"].length).to eq(2)
+      expect(captured_body["bookingLines"][0]["type"]).to eq("A")
+      expect(captured_body["bookingLines"][0]["accountKey"]).to eq(550000)
+      # Should NOT send the old wrong field name.
+      expect(captured_body).not_to have_key("periodNr")
+
+      # Schema validation: any future regression on field names/required fields
+      # fails here.
+      expect(captured_body).to match_octopus_schema("FinancialDiversBookingServiceData")
     end
 
     it "returns error when required params are missing" do

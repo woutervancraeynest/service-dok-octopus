@@ -40,8 +40,9 @@ module Tools
         "bookyearKey" => { "id" => params["bookyear_id"].to_i },
         "journalKey" => params["journal_key"],
         "documentSequenceNr" => params["document_sequence_nr"].to_i,
-        "periodNr" => params["period_nr"].to_i,
-        "documentDate" => params["document_date"]
+        "bookyearPeriodeNr" => params["period_nr"].to_i,
+        "documentDate" => params["document_date"],
+        "exchangeRate" => params["exchange_rate"]&.to_f || 1.0
       }
 
       # Booking lines
@@ -62,11 +63,10 @@ module Tools
       when "A"
         line_data["accountKey"] = line["account_key"].to_i
       when "C", "S"
-        if line["relation_id"]
-          line_data["relationKey"] = { "id" => line["relation_id"].to_i }
-        elsif line["external_relation_id"]
-          line_data["externalRelationId"] = line["external_relation_id"].to_i
-        end
+        # Per FinancialDiversBookingLineServiceData: relationId is an int,
+        # NOT a {id: ...} wrapper object (unlike many other schemas).
+        line_data["relationId"] = line["relation_id"].to_i if line["relation_id"]
+        line_data["externalRelationId"] = line["external_relation_id"].to_i if line["external_relation_id"]
       end
 
       line_data["reference"] = line["reference"] if line["reference"]

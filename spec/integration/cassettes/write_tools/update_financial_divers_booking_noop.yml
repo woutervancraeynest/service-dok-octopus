@@ -1,0 +1,223 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://service.inaras.be/octopus-rest-api/v1/authentication
+    body:
+      encoding: UTF-8
+      string: '{"user":"<OCTOPUS_USER>","password":"<OCTOPUS_PASSWORD>"}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Softwarehouseuuid:
+      - "<SOFTWARE_HOUSE_ID>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '237'
+      Date:
+      - Sat, 06 Jun 2026 23:25:50 GMT
+    body:
+      encoding: UTF-8
+      string: '{"token":"<AUTH_TOKEN>"}'
+  recorded_at: Sat, 06 Jun 2026 23:25:50 GMT
+- request:
+    method: post
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers?dossierId=49555
+    body:
+      encoding: UTF-8
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Token:
+      - "<AUTH_TOKEN>"
+      Content-Length:
+      - '0'
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '276'
+      Date:
+      - Sat, 06 Jun 2026 23:25:50 GMT
+    body:
+      encoding: UTF-8
+      string: '{"Dossiertoken":"<DOSSIER_TOKEN>"}'
+  recorded_at: Sat, 06 Jun 2026 23:25:50 GMT
+- request:
+    method: get
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers/49555/financialdiversbookings?bookyearKeyId=1&journalKey=F1
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Dossiertoken:
+      - "<DOSSIER_TOKEN>"
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 400
+      message: Bad Request
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '56'
+      Date:
+      - Sat, 06 Jun 2026 23:25:50 GMT
+    body:
+      encoding: UTF-8
+      string: '{"technicalInfo":"Invalid or missing parameters passed"}'
+  recorded_at: Sat, 06 Jun 2026 23:25:50 GMT
+- request:
+    method: get
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers/49555/financialdiversbookings/modified?bookyearId=1&journalKey=F1&modifiedTimeStamp=2000-01-01%2000:00:00.000
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Dossiertoken:
+      - "<DOSSIER_TOKEN>"
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '1869'
+      Date:
+      - Sat, 06 Jun 2026 23:25:50 GMT
+    body:
+      encoding: UTF-8
+      string: '[{"bookingLines":[{"accountKey":0,"amount":-347.04,"externalRelationId":0,"reference":"2009/A1/7","relationId":15,"type":"S"},{"accountKey":756000,"amount":5.85,"externalRelationId":0,"reference":"De
+        Schelp","relationId":0,"type":"A"},{"accountKey":0,"amount":-5.85,"externalRelationId":0,"reference":"De
+        Schelp","relationId":15,"type":"S"}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200003,"documentDate":"2000-05-28","documentSequenceNr":5,"exchangeRate":1.0,"journalKey":"F1"},{"bookingLines":[{"accountKey":0,"amount":-496.1,"externalRelationId":0,"reference":"2010/A1/1","relationId":18,"type":"S"},{"accountKey":0,"amount":-772.0,"externalRelationId":0,"reference":"2010/A1/5","relationId":13,"type":"S"}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"documentDate":"2000-01-28","documentSequenceNr":3,"exchangeRate":1.0,"journalKey":"F1"},{"bookingLines":[{"accountKey":588888,"amount":4500.0,"externalRelationId":0,"reference":"Openingsboeking
+        saldo","relationId":0,"type":"A"},{"accountKey":0,"amount":-34.0,"externalRelationId":0,"reference":"2010/A1/3","relationId":17,"type":"S"}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"documentDate":"2000-01-20","documentSequenceNr":1,"exchangeRate":1.0,"journalKey":"F1"},{"bookingLines":[{"accountKey":0,"amount":2544.0,"externalRelationId":0,"reference":"2010/V1/1","relationId":16,"type":"C"},{"accountKey":0,"amount":9.75,"externalRelationId":0,"reference":"2009/A1/6","relationId":14,"type":"S"}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200001,"documentDate":"2000-01-27","documentSequenceNr":2,"exchangeRate":1.0,"journalKey":"F1"},{"bookingLines":[{"accountKey":0,"amount":-600.0,"externalRelationId":0,"reference":"678/999","relationId":19,"type":"S"}],"bookyearKey":{"id":1},"bookyearPeriodeNr":200003,"documentDate":"2000-04-29","documentSequenceNr":4,"exchangeRate":1.0,"journalKey":"F1"}]'
+  recorded_at: Sat, 06 Jun 2026 23:25:50 GMT
+- request:
+    method: post
+    uri: https://service.inaras.be/octopus-rest-api/v1/authentication
+    body:
+      encoding: UTF-8
+      string: '{"user":"<OCTOPUS_USER>","password":"<OCTOPUS_PASSWORD>"}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Softwarehouseuuid:
+      - "<SOFTWARE_HOUSE_ID>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '237'
+      Date:
+      - Sat, 06 Jun 2026 23:25:50 GMT
+    body:
+      encoding: UTF-8
+      string: '{"token":"<AUTH_TOKEN>"}'
+  recorded_at: Sat, 06 Jun 2026 23:25:50 GMT
+- request:
+    method: post
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers?dossierId=49555
+    body:
+      encoding: UTF-8
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Token:
+      - "<AUTH_TOKEN>"
+      Content-Length:
+      - '0'
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '276'
+      Date:
+      - Sat, 06 Jun 2026 23:25:50 GMT
+    body:
+      encoding: UTF-8
+      string: '{"Dossiertoken":"<DOSSIER_TOKEN>"}'
+  recorded_at: Sat, 06 Jun 2026 23:25:50 GMT
+- request:
+    method: put
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers/49555/financialdiversbookings
+    body:
+      encoding: UTF-8
+      string: '{"bookyearKey":{"id":1},"journalKey":"F1","documentSequenceNr":5,"bookyearPeriodeNr":200003,"documentDate":"2000-05-28","exchangeRate":1.0,"bookingLines":[{"type":"S","amount":-347.04,"relationId":15,"reference":"2009/A1/7"},{"type":"A","amount":5.85,"accountKey":756000,"reference":"De
+        Schelp"},{"type":"S","amount":-5.85,"relationId":15,"reference":"De Schelp"}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Dossiertoken:
+      - "<DOSSIER_TOKEN>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 204
+      message: No Content
+    headers:
+      Date:
+      - Sat, 06 Jun 2026 23:25:50 GMT
+    body:
+      encoding: UTF-8
+      string: ''
+  recorded_at: Sat, 06 Jun 2026 23:25:50 GMT
+recorded_with: VCR 6.4.0
