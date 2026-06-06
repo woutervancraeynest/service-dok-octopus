@@ -1,7 +1,24 @@
 # Insert a balancing entry in the configured Octopus dossier.
 #
-# Creates a balancing entry to match payments with invoices or other documents.
-# Requires document_keys (at least 2 documents to match) and an amount.
+# Balancing happens at LINE level: each side (debet + credit) points to a
+# specific bookingLine within a document, not just to a document. The Octopus
+# API expects a BalancingServiceData body:
+#
+#   {
+#     "debetKey":  { "bookyearKey": {"id": int}, "journalKey": str, "documentSequenceNr": int, "lineSequenceNr": int },
+#     "creditKey": { "bookyearKey": {"id": int}, "journalKey": str, "documentSequenceNr": int, "lineSequenceNr": int },
+#     "balanceAmount": double
+#   }
+#
+# The caller MUST decide which side is debet and which is credit. Convention:
+#   - Customer payment (balancing type 'C'): sell invoice (V-journal)  = debet,
+#                                            bank booking (F-journal)  = credit.
+#   - Supplier/VISA payment (type 'S'):      bank booking (F-journal)  = debet,
+#                                            buy invoice  (A/D-journal) = credit.
+#
+# `line_sequence_nr` defaults to -1 when omitted, which Octopus interprets as
+# "the whole document" (used for invoice headers in V1/A1). For bank booking
+# lines you must pass the actual line number.
 #
 # Rate limit: 400 calls/day.
 #
@@ -9,56 +26,67 @@ module Tools
   class InsertBalancing
     extend OctopusAuth
 
+    REQUIRED_KEY_FIELDS = %w[bookyear_id journal_key document_sequence_nr].freeze
+
     def self.call(params:, context:)
-      # Validate required params
-      unless params["document_keys"].is_a?(Array) && params["document_keys"].length >= 2
-        return { error: "document_keys is required and must contain at least 2 documents " \
-                        "(e.g. one bank booking and one invoice). Each document needs " \
-                        "bookyear_id, journal_key, and document_sequence_nr." }
-      end
-
-      unless params["amount"]
-        return { error: "amount is required. Provide the balancing amount." }
-      end
-
-      # Validate each document key
-      params["document_keys"].each_with_index do |doc, i|
-        missing = %w[bookyear_id journal_key document_sequence_nr].select { |k| doc[k].nil? }
-        unless missing.empty?
-          return { error: "document_keys[#{i}] is missing: #{missing.join(", ")}." }
-        end
-      end
+      error = validate_params(params)
+      return { error: error } if error
 
       balancing_data = build_balancing_data(params)
 
       with_dossier_connection(context) do |client|
-        result = client.insert_balancing(balancing_data)
-        {
-          status: "created",
-          message: "Balancing inserted successfully."
-        }
+        begin
+          client.insert_balancing(balancing_data)
+          {
+            status: "created",
+            message: "Balancing inserted successfully.",
+            sent_body: balancing_data
+          }
+        rescue OctopusClient::ApiError => e
+          $stderr.puts "[insert_balancing] Octopus rejected request"
+          $stderr.puts "[insert_balancing] body: #{balancing_data.to_json}"
+          $stderr.puts "[insert_balancing] error: #{e.message}"
+          {
+            error: "Octopus API error: #{e.message}",
+            sent_body: balancing_data
+          }
+        end
       end
     end
 
-    private
+    def self.validate_params(params)
+      return "amount is required (the balancing amount, positive number)." if params["amount"].nil?
+      return "amount must be > 0." unless params["amount"].to_f > 0
 
-    def self.build_balancing_data(params)
-      data = {
-        "amount" => params["amount"].to_f
-      }
+      %w[debet_key credit_key].each do |side|
+        key = params[side]
+        return "#{side} is required and must be an object." unless key.is_a?(Hash)
 
-      data["reference"] = params["reference"] if params["reference"]
-      data["balancingDate"] = params["balancing_date"] if params["balancing_date"]
-
-      data["documentKeys"] = params["document_keys"].map do |doc|
-        {
-          "bookyearKey" => { "id" => doc["bookyear_id"].to_i },
-          "journalKey" => doc["journal_key"],
-          "documentSequenceNr" => doc["document_sequence_nr"].to_i
-        }
+        missing = REQUIRED_KEY_FIELDS.select { |f| key[f].nil? || key[f].to_s.empty? }
+        unless missing.empty?
+          return "#{side} is missing: #{missing.join(", ")}."
+        end
       end
 
-      data
+      nil
+    end
+
+    def self.build_balancing_data(params)
+      {
+        "debetKey"      => build_key(params["debet_key"]),
+        "creditKey"     => build_key(params["credit_key"]),
+        "balanceAmount" => params["amount"].to_f
+      }
+    end
+
+    def self.build_key(key)
+      line_nr = key["line_sequence_nr"]
+      {
+        "bookyearKey"        => { "id" => key["bookyear_id"].to_i },
+        "journalKey"         => key["journal_key"],
+        "documentSequenceNr" => key["document_sequence_nr"].to_i,
+        "lineSequenceNr"     => line_nr.nil? ? -1 : line_nr.to_i
+      }
     end
   end
 end

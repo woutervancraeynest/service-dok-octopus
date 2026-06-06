@@ -1,0 +1,103 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://service.inaras.be/octopus-rest-api/v1/authentication
+    body:
+      encoding: UTF-8
+      string: '{"user":"<OCTOPUS_USER>","password":"<OCTOPUS_PASSWORD>"}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Softwarehouseuuid:
+      - "<SOFTWARE_HOUSE_ID>"
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '237'
+      Date:
+      - Sat, 06 Jun 2026 13:33:50 GMT
+    body:
+      encoding: UTF-8
+      string: '{"token":"<AUTH_TOKEN>"}'
+  recorded_at: Sat, 06 Jun 2026 13:33:50 GMT
+- request:
+    method: post
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers?dossierId=49555
+    body:
+      encoding: UTF-8
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Token:
+      - "<AUTH_TOKEN>"
+      Content-Length:
+      - '0'
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '276'
+      Date:
+      - Sat, 06 Jun 2026 13:33:50 GMT
+    body:
+      encoding: UTF-8
+      string: '{"Dossiertoken":"<DOSSIER_TOKEN>"}'
+  recorded_at: Sat, 06 Jun 2026 13:33:50 GMT
+- request:
+    method: get
+    uri: https://service.inaras.be/octopus-rest-api/v1/dossiers/49555/balancings/modified?modifiedTimeStamp=2000-01-01%2000:00:00.000
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.2
+      Dossiertoken:
+      - "<DOSSIER_TOKEN>"
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '4293'
+      Date:
+      - Sat, 06 Jun 2026 13:33:50 GMT
+    body:
+      encoding: UTF-8
+      string: '{"deletedBalancings":[],"modifiedBalancings":[{"creditBalancedBookingAmount":2544.0,"creditDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":2,"journalKey":"F1","lineSequenceNr":1},"comment":"2010/V1/1","creditBookingAmount":2544.0,"creditDocumentAmount":2544.0,"currencyCode":"EUR","debetBookingAmount":0.0,"debetDocumentAmount":0.0,"documentDate":"2000-01-27","exchangeRate":1.0,"reference":""},"debetBalancedBookingAmount":0.0,"debetDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":1,"journalKey":"V1","lineSequenceNr":-1},"comment":"Levering","creditBookingAmount":0.0,"creditDocumentAmount":0.0,"currencyCode":"EUR","debetBookingAmount":2544.0,"debetDocumentAmount":2544.0,"documentDate":"2000-03-01","exchangeRate":1.0,"reference":"Levering"},"type":{"accountNr":0,"externalRelationId":0,"relationKey":{"id":16},"type":"C"}},{"creditBalancedBookingAmount":34.0,"creditDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":3,"journalKey":"A1","lineSequenceNr":-1},"comment":"09-1254
+        - Hosting domain name","creditBookingAmount":34.0,"creditDocumentAmount":34.0,"currencyCode":"EUR","debetBookingAmount":0.0,"debetDocumentAmount":0.0,"documentDate":"2000-01-17","exchangeRate":1.0,"reference":"09-1254
+        - Hosting domain name"},"debetBalancedBookingAmount":0.0,"debetDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":1,"journalKey":"F1","lineSequenceNr":2},"comment":"2010/A1/3","creditBookingAmount":0.0,"creditDocumentAmount":0.0,"currencyCode":"EUR","debetBookingAmount":34.0,"debetDocumentAmount":34.0,"documentDate":"2000-01-20","exchangeRate":1.0,"reference":""},"type":{"accountNr":0,"externalRelationId":0,"relationKey":{"id":17},"type":"S"}},{"creditBalancedBookingAmount":496.1,"creditDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":1,"journalKey":"A1","lineSequenceNr":-1},"comment":"F.
+        09-10/6435 - Octopus: periode 1/7/2010-30/6/2010","creditBookingAmount":496.1,"creditDocumentAmount":496.1,"currencyCode":"EUR","debetBookingAmount":0.0,"debetDocumentAmount":0.0,"documentDate":"2000-01-16","exchangeRate":1.0,"reference":"+++251/8016/43531+++"},"debetBalancedBookingAmount":0.0,"debetDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":3,"journalKey":"F1","lineSequenceNr":1},"comment":"2010/A1/1","creditBookingAmount":0.0,"creditDocumentAmount":0.0,"currencyCode":"EUR","debetBookingAmount":496.1,"debetDocumentAmount":496.1,"documentDate":"2000-01-28","exchangeRate":1.0,"reference":""},"type":{"accountNr":0,"externalRelationId":0,"relationKey":{"id":18},"type":"S"}},{"creditBalancedBookingAmount":321.0,"creditDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":2,"journalKey":"A1","lineSequenceNr":-1},"comment":"F
+        679/99 - Bureelben.","creditBookingAmount":321.0,"creditDocumentAmount":321.0,"currencyCode":"EUR","debetBookingAmount":0.0,"debetDocumentAmount":0.0,"documentDate":"2000-01-17","exchangeRate":1.0,"reference":"F
+        679/99 - Bureelben."},"debetBalancedBookingAmount":0.0,"debetDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":4,"journalKey":"F1","lineSequenceNr":1},"comment":"678/999","creditBookingAmount":0.0,"creditDocumentAmount":0.0,"currencyCode":"EUR","debetBookingAmount":600.0,"debetDocumentAmount":600.0,"documentDate":"2000-04-29","exchangeRate":1.0,"reference":""},"type":{"accountNr":0,"externalRelationId":0,"relationKey":{"id":19},"type":"S"}},{"creditBalancedBookingAmount":279.0,"creditDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":4,"journalKey":"A1","lineSequenceNr":-1},"comment":"F.
+        678/999 - Notebook Lenovo","creditBookingAmount":679.0,"creditDocumentAmount":679.0,"currencyCode":"EUR","debetBookingAmount":0.0,"debetDocumentAmount":0.0,"documentDate":"2000-01-17","exchangeRate":1.0,"reference":""},"debetBalancedBookingAmount":0.0,"debetDocument":{"balancingKey":{"bookyearKey":{"id":1},"documentSequenceNr":4,"journalKey":"F1","lineSequenceNr":1},"comment":"678/999","creditBookingAmount":0.0,"creditDocumentAmount":0.0,"currencyCode":"EUR","debetBookingAmount":600.0,"debetDocumentAmount":600.0,"documentDate":"2000-04-29","exchangeRate":1.0,"reference":""},"type":{"accountNr":0,"externalRelationId":0,"relationKey":{"id":19},"type":"S"}}]}'
+  recorded_at: Sat, 06 Jun 2026 13:33:50 GMT
+recorded_with: VCR 6.4.0

@@ -1786,46 +1786,62 @@
     },
     {
       "name": "insert_balancing",
-      "description": "Insert a balancing entry in the configured Octopus dossier. Creates a balancing entry to match a bank payment (F-journal) with an invoice (A/V-journal). The document_keys array must contain at least two documents: typically one bank booking and one invoice. Rate limit: 400 calls/day.",
+      "description": "Insert a balancing entry (afpunting) in the configured Octopus dossier. Balancing always pairs ONE debet booking line with ONE credit booking line. CONVENTION: for a customer payment (type C), the sell invoice (V-journal) is the debet side and the bank booking (F-journal) is the credit side. For a supplier/VISA payment (type S), the bank booking (F-journal) is the debet side and the buy invoice (A/D-journal) is the credit side. Each side identifies a SPECIFIC bookingLine via line_sequence_nr; use -1 (the default if omitted) for the invoice header line (V1/A1 facturen), or the actual line number for bank booking lines. Use get_modified_balancings to verify the result. Rate limit: 400 calls/day.",
       "input_schema": {
         "type": "object",
         "properties": {
+          "debet_key": {
+            "type": "object",
+            "description": "Identifies the booking line on the DEBET side of the balancing.",
+            "properties": {
+              "bookyear_id": {
+                "type": "integer",
+                "description": "Bookyear ID of the document"
+              },
+              "journal_key": {
+                "type": "string",
+                "description": "Journal key (e.g. 'F1' for bank, 'A1'/'D4' for buy, 'V1' for sell)"
+              },
+              "document_sequence_nr": {
+                "type": "integer",
+                "description": "Document sequence number within the journal"
+              },
+              "line_sequence_nr": {
+                "type": "integer",
+                "description": "Booking line sequence number within the document. Use -1 (default) for the invoice header (V1/A1 facturen). Use the actual line number for bank/financial booking lines."
+              }
+            },
+            "required": ["bookyear_id", "journal_key", "document_sequence_nr"]
+          },
+          "credit_key": {
+            "type": "object",
+            "description": "Identifies the booking line on the CREDIT side of the balancing.",
+            "properties": {
+              "bookyear_id": {
+                "type": "integer",
+                "description": "Bookyear ID of the document"
+              },
+              "journal_key": {
+                "type": "string",
+                "description": "Journal key (e.g. 'F1' for bank, 'A1'/'D4' for buy, 'V1' for sell)"
+              },
+              "document_sequence_nr": {
+                "type": "integer",
+                "description": "Document sequence number within the journal"
+              },
+              "line_sequence_nr": {
+                "type": "integer",
+                "description": "Booking line sequence number within the document. Use -1 (default) for the invoice header (V1/A1 facturen). Use the actual line number for bank/financial booking lines."
+              }
+            },
+            "required": ["bookyear_id", "journal_key", "document_sequence_nr"]
+          },
           "amount": {
             "type": "number",
-            "description": "Balancing amount (the amount being matched between the two documents)"
-          },
-          "reference": {
-            "type": "string",
-            "description": "Balancing reference (e.g. invoice number or payment reference)"
-          },
-          "balancing_date": {
-            "type": "string",
-            "description": "Balancing date in YYYY-MM-DD format (usually the bank transaction date)"
-          },
-          "document_keys": {
-            "type": "array",
-            "description": "Documents to balance (typically one F-journal bank entry and one A/V-journal invoice)",
-            "items": {
-              "type": "object",
-              "properties": {
-                "bookyear_id": {
-                  "type": "integer",
-                  "description": "Bookyear ID of the document"
-                },
-                "journal_key": {
-                  "type": "string",
-                  "description": "Journal key (e.g. 'F1' for bank, 'A1' for buy, 'V1' for sell)"
-                },
-                "document_sequence_nr": {
-                  "type": "integer",
-                  "description": "Document sequence number within the journal"
-                }
-              },
-              "required": ["bookyear_id", "journal_key", "document_sequence_nr"]
-            }
+            "description": "Balancing amount as a positive number (the amount being matched between the debet and credit side). Use the absolute value."
           }
         },
-        "required": ["amount", "document_keys"]
+        "required": ["debet_key", "credit_key", "amount"]
       },
       "annotations": {
         "read_only_hint": false,
@@ -1835,63 +1851,51 @@
     },
     {
       "name": "delete_balancing",
-      "description": "Delete a balancing entry from the configured Octopus dossier. Use this to undo an incorrect payment-to-invoice match. Supports three modes: 'item' (delete specific balancing by document keys), 'bookingline' (delete all balancings for a booking line), 'document' (delete all balancings for a document). Rate limit: 400 calls/day.",
+      "description": "Delete a balancing entry (afpunting) from the configured Octopus dossier. Use this to undo an incorrect payment-to-invoice match. Three modes: 'item' (delete one specific balancing by its debet and credit line keys — use the SAME debet_key/credit_key you would use with insert_balancing), 'bookingline' (delete ALL balancings touching one booking line), 'document' (delete ALL balancings touching one document). Rate limit: 400 calls/day.",
       "input_schema": {
         "type": "object",
         "properties": {
           "mode": {
             "type": "string",
-            "description": "Delete mode: 'item' (default), 'bookingline', or 'document'"
+            "description": "Delete mode: 'item' (default), 'bookingline', or 'document'."
           },
-          "amount": {
-            "type": "number",
-            "description": "Balancing amount (for mode 'item')"
+          "debet_key": {
+            "type": "object",
+            "description": "Debet side of the balancing to delete (mode 'item' only). Same shape as insert_balancing.debet_key.",
+            "properties": {
+              "bookyear_id": { "type": "integer" },
+              "journal_key": { "type": "string" },
+              "document_sequence_nr": { "type": "integer" },
+              "line_sequence_nr": { "type": "integer", "description": "Defaults to -1 if omitted." }
+            },
+            "required": ["bookyear_id", "journal_key", "document_sequence_nr"]
           },
-          "reference": {
-            "type": "string",
-            "description": "Balancing reference (for mode 'item')"
-          },
-          "balancing_date": {
-            "type": "string",
-            "description": "Balancing date in YYYY-MM-DD format (for mode 'item')"
-          },
-          "document_keys": {
-            "type": "array",
-            "description": "Documents of the balancing to delete (for mode 'item')",
-            "items": {
-              "type": "object",
-              "properties": {
-                "bookyear_id": {
-                  "type": "integer",
-                  "description": "Bookyear ID of the document"
-                },
-                "journal_key": {
-                  "type": "string",
-                  "description": "Journal key of the document"
-                },
-                "document_sequence_nr": {
-                  "type": "integer",
-                  "description": "Document sequence number"
-                }
-              },
-              "required": ["bookyear_id", "journal_key", "document_sequence_nr"]
-            }
+          "credit_key": {
+            "type": "object",
+            "description": "Credit side of the balancing to delete (mode 'item' only). Same shape as insert_balancing.credit_key.",
+            "properties": {
+              "bookyear_id": { "type": "integer" },
+              "journal_key": { "type": "string" },
+              "document_sequence_nr": { "type": "integer" },
+              "line_sequence_nr": { "type": "integer", "description": "Defaults to -1 if omitted." }
+            },
+            "required": ["bookyear_id", "journal_key", "document_sequence_nr"]
           },
           "bookyear_id": {
             "type": "integer",
-            "description": "Bookyear ID (for modes 'bookingline' and 'document')"
+            "description": "Bookyear ID (for modes 'bookingline' and 'document')."
           },
           "journal_key": {
             "type": "string",
-            "description": "Journal key (for modes 'bookingline' and 'document')"
+            "description": "Journal key (for modes 'bookingline' and 'document')."
           },
           "document_sequence_nr": {
             "type": "integer",
-            "description": "Document sequence number (for modes 'bookingline' and 'document')"
+            "description": "Document sequence number (for modes 'bookingline' and 'document')."
           },
-          "booking_line_sequence_nr": {
+          "line_sequence_nr": {
             "type": "integer",
-            "description": "Booking line sequence number (for mode 'bookingline' only)"
+            "description": "Booking line sequence number within the document (REQUIRED for mode 'bookingline')."
           }
         }
       },

@@ -6,15 +6,31 @@ Koppel bankbetalingen aan openstaande facturen in Octopus. Identificeer welke be
 
 ## Achtergrond
 
-De `insert_balancing` tool is volledig functioneel en heeft geen bekende blokkerende issues. De Octopus API werkt op **document-niveau** — je koppelt documenten (bankboeking + factuur) met een bedrag. Er zijn geen expliciete debet-/credit-keys nodig op lijnniveau; de API bepaalt dit automatisch op basis van de gekoppelde documenten.
+In Octopus wordt een "afpunting" (balancing) gebruikt om een bankboeking (F-journal) te koppelen aan een factuur (A-journal voor aankopen, V-journal voor verkopen, D-journal voor diversen). Bankafschriften worden dagelijks automatisch via CODA geïmporteerd en verschijnen als financiële boekingen in de F-journals.
 
-In Octopus wordt een "afpunting" (balancing) gebruikt om een bankboeking (F-journal) te koppelen aan een factuur (A-journal voor aankopen, V-journal voor verkopen). Bankafschriften worden dagelijks automatisch via CODA geïmporteerd en verschijnen als financiële boekingen in de F-journals.
+**Belangrijk: balancing werkt op LIJN-niveau, niet op document-niveau.** Eén balancing koppelt EXACT ÉÉN boekingslijn aan de debetkant aan EXACT ÉÉN boekingslijn aan de creditkant. Je moet dus altijd `debet_key` én `credit_key` opgeven, elk met `bookyear_id`, `journal_key`, `document_sequence_nr` en `line_sequence_nr`.
+
+### Debet/credit-conventie
+
+Welke kant debet is en welke credit hangt af van het type balancing:
+
+| Type balancing | DEBET-kant | CREDIT-kant |
+|---|---|---|
+| Klantbetaling (type C) | Verkoopfactuur (V-journal) | Bankontvangst (F-journal) |
+| Leveranciersbetaling / VISA (type S) | Bankbetaling (F-journal) | Aankoopfactuur / VISA-staat (A/D-journal) |
+
+### `line_sequence_nr` conventie
+
+- Voor het hoofd van een factuur (V1, A1): gebruik `-1` (of laat weg → default `-1`).
+- Voor een individuele bankboekingslijn (F1, D-journal): gebruik het werkelijke regelnummer uit de bookingLines van die boeking.
+- Verifieer regelnummers door `list_financial_divers_bookings` voor F-journals en `list_buy_sell_bookings` voor A/V-journals op te roepen en de `bookingLines` array te bekijken.
 
 ### Terminologie
 - **F-journal**: Financieel dagboek (bank) — bijv. F1 = "BELFIUS - 4974"
 - **A-journal**: Aankoopdagboek — bijv. A1 = "AANKOPEN"
 - **V-journal**: Verkoopdagboek — bijv. V1 = "VERKOOP"
-- **Afpunting / Balancing**: De koppeling tussen een bankboeking en een factuur
+- **D-journal**: Diversen — bijv. D4 voor VISA-staten
+- **Afpunting / Balancing**: De koppeling tussen één debet-boekingslijn en één credit-boekingslijn
 - **Gestructureerde mededeling**: Belgische betalingsreferentie in formaat +++xxx/xxxx/xxxxx+++
 
 ## Workflow
@@ -97,17 +113,25 @@ Vergelijk elke niet-afgepunte bankboeking met openstaande facturen.
 
 #### Automatische afpunting (hoge confidence)
 
+Voorbeeld 1 — Klantbetaling (V1-factuur afgepunt tegen F1-bankontvangst):
 ```
 insert_balancing(
-  amount: <matched bedrag>,
-  balancing_date: "<bankboekingsdatum>",
-  reference: "<factuurreferentie>",
-  document_keys: [
-    { bookyear_id: <id>, journal_key: "F1", document_sequence_nr: <bank_doc_nr> },
-    { bookyear_id: <id>, journal_key: "A1", document_sequence_nr: <factuur_doc_nr> }
-  ]
+  debet_key:  { bookyear_id: <id>, journal_key: "V1", document_sequence_nr: <factuur_doc_nr>, line_sequence_nr: -1 },
+  credit_key: { bookyear_id: <id>, journal_key: "F1", document_sequence_nr: <bank_doc_nr>,   line_sequence_nr: <bank_lijn_nr> },
+  amount: <positief bedrag>
 )
 ```
+
+Voorbeeld 2 — Leveranciersbetaling (F1-bankbetaling afgepunt tegen A1-aankoopfactuur):
+```
+insert_balancing(
+  debet_key:  { bookyear_id: <id>, journal_key: "F1", document_sequence_nr: <bank_doc_nr>,   line_sequence_nr: <bank_lijn_nr> },
+  credit_key: { bookyear_id: <id>, journal_key: "A1", document_sequence_nr: <factuur_doc_nr>, line_sequence_nr: -1 },
+  amount: <positief bedrag>
+)
+```
+
+Het `amount`-veld is altijd positief (absolute waarde). `line_sequence_nr` is optioneel en defaultt naar `-1` (= het hele document); geef voor bankboekingen het werkelijke regelnummer mee uit de `bookingLines` van de boeking.
 
 #### Voorstellen (lage confidence)
 
@@ -159,8 +183,29 @@ Reconciliatie voltooid voor boekjaar 2026, dagboek F1:
 
 ### Verkeerde afpunting ongedaan maken
 
-Als een afpunting fout blijkt:
+Drie modes mogelijk:
 
+**Mode 'item'** — Verwijder ÉÉN specifieke afpunting (gebruik dezelfde `debet_key`/`credit_key` als bij `insert_balancing`):
+```
+delete_balancing(
+  mode: "item",
+  debet_key:  { bookyear_id: <id>, journal_key: "V1", document_sequence_nr: <factuur_doc_nr>, line_sequence_nr: -1 },
+  credit_key: { bookyear_id: <id>, journal_key: "F1", document_sequence_nr: <bank_doc_nr>,   line_sequence_nr: <bank_lijn_nr> }
+)
+```
+
+**Mode 'bookingline'** — Verwijder ALLE afpuntingen die één boekingslijn raken:
+```
+delete_balancing(
+  mode: "bookingline",
+  bookyear_id: <id>,
+  journal_key: "F1",
+  document_sequence_nr: <bank_doc_nr>,
+  line_sequence_nr: <bank_lijn_nr>
+)
+```
+
+**Mode 'document'** — Verwijder ALLE afpuntingen die één document raken (alle lijnen):
 ```
 delete_balancing(
   mode: "document",
@@ -169,8 +214,6 @@ delete_balancing(
   document_sequence_nr: <factuur_doc_nr>
 )
 ```
-
-Dit verwijdert alle afpuntingen voor dat document.
 
 ### Rate limits
 
