@@ -10,4 +10,5 @@ group :development, :test do
   gem "rack-test", "~> 2.1"
   gem "webmock", "~> 3.23"
   gem "vcr", "~> 6.2"
+  gem "json_schemer", "~> 2.3"
 end

@@ -5,6 +5,9 @@ ENV["RACK_ENV"] = "test"
 
 require_relative "../app"
 
+# Load all support files (RSpec matchers, helpers, etc.)
+Dir[File.join(__dir__, "support", "*.rb")].each { |f| require f }
+
 # Disable external network connections in tests.
 # Only allow connections to localhost (for Rack::Test).
 WebMock.disable_net_connect!(allow_localhost: true)

@@ -1,0 +1,500 @@
+# Tool → Octopus schema mapping for schema conformance audit.
+#
+# For each MCP write-tool, this map declares:
+#   - schema:        the OpenAPI component name the wire body should match
+#   - http_method:   the HTTP method the gem ultimately uses
+#   - url_fragment:  a substring matched against the request URL for stubbing
+#   - sample_params: realistic input that the tool must accept and translate
+#                    into a valid body
+#
+# Tools that POST/PUT with NO body (only query params) are listed under
+# "tools_without_body" and skipped by the audit.
+#
+# When you add a new write-tool to manifest.json, add it here too — the audit
+# will fail otherwise.
+
+# ---------------------------------------------------------------------------
+# Master data (upserts)
+# ---------------------------------------------------------------------------
+
+create_relation:
+  schema: RelationServiceData
+  http_method: put
+  url_fragment: /relations
+  sample_params:
+    name: "Test Relation BV"
+    client: true
+    supplier: false
+    vat_number: "BE0123456789"
+    email: "test@example.be"
+    street_and_nr: "Teststraat 1"
+    postal_code: "1000"
+    city: "Brussel"
+    country: "BE"
+    iban: "BE68539007547034"
+    currency_code: "EUR"
+
+create_or_update_account:
+  schema: AccountServiceData
+  http_method: put
+  url_fragment: /accounts
+  pending: true
+  pending_reason: |
+    Tool sends a fundamentally different shape than AccountServiceData expects:
+    - sends bookyearKey at root (schema: nested inside accountKey)
+    - sends accountKey as integer (schema: AccountKey object {bookyearKey, id})
+    - sends description1/description2 (schema: description as StringServiceData
+      multi-language object)
+    - sends vatCode (schema: purchaseVatCode + salesVatCode separately)
+    - sends costCentreRequired boolean (schema: costCentreType integer 0/1/2)
+    - sends blocked (not in schema)
+    TODO: rewrite build_account_data + update tool input_schema. May need a
+    live-test to confirm what Octopus actually accepts before changing.
+  sample_params:
+    bookyear_id: 1
+    account_key: 600000
+    description1: "Test account"
+    description2: "Secondary"
+    vat_code: "21"
+    cost_centre_required: false
+    blocked: false
+
+create_or_update_cost_centre:
+  schema: CostCentreServiceData
+  http_method: put
+  url_fragment: /costcentres
+  pending: true
+  pending_reason: |
+    Schema requires description as StringServiceData (multi-language object
+    {description_NL, description_FR, ...}) but tool sends a plain string.
+    Schema also requires `closed` and `costCentreKey` as objects.
+    TODO: rewrite build_cost_centre_data + update tool input_schema.
+  sample_params:
+    description: "Test cost centre"
+    cost_centre_id: 1
+    closed: false
+
+create_or_update_product:
+  schema: ProductServiceData
+  http_method: put
+  url_fragment: /products
+  pending: true
+  pending_reason: |
+    Tool body misses ALL required ProductServiceData fields:
+    active, code, currencyCode, defaultBookingAccountNr, priceVatExclusive,
+    priceVatInclusive, productKey, unit, vatCode.
+    Also: schema names are camelCase but different (priceVatExclusive vs
+    unitPrice; defaultBookingAccountNr vs bookingAccountNr; active vs blocked).
+    code and description need to be StringServiceData (multi-lang).
+    TODO: full rewrite of build_product_data + tool input_schema.
+  sample_params:
+    description: "Test product"
+    product_id: 1
+    external_product_nr: "P001"
+    unit_price: 10.0
+    unit: "pcs"
+    vat_code: "21"
+    booking_account_nr: 700000
+    blocked: false
+
+# ---------------------------------------------------------------------------
+# Buy/sell bookings
+# ---------------------------------------------------------------------------
+
+create_buy_sell_booking:
+  schema: BuySellBookingAndAttachmentRequest
+  http_method: post
+  url_fragment: /buysellbookings
+  sample_params:
+    bookyear_id: 1
+    journal_key: "A1"
+    document_sequence_nr: 100
+    period_nr: 3
+    document_date: "2024-03-15"
+    expiry_date: "2024-04-15"
+    amount: 121.0
+    currency_code: "EUR"
+    relation_id: 1
+    reference: "REF-001"
+    booking_lines:
+      - account_key: 600000
+        base_amount: 100.0
+        vat_code: "21"
+        vat_amount: 21.0
+
+update_buy_sell_booking:
+  schema: BuySellBookingServiceData
+  http_method: put
+  url_fragment: /buysellbookings
+  sample_params:
+    bookyear_id: 1
+    journal_key: "A1"
+    document_sequence_nr: 100
+    period_nr: 3
+    document_date: "2024-03-15"
+    expiry_date: "2024-04-15"
+    amount: 121.0
+    currency_code: "EUR"
+    relation_id: 1
+    reference: "REF-001"
+    booking_lines:
+      - account_key: 600000
+        base_amount: 100.0
+        vat_code: "21"
+        vat_amount: 21.0
+
+# ---------------------------------------------------------------------------
+# Financial/divers bookings
+# ---------------------------------------------------------------------------
+
+create_financial_divers_booking:
+  schema: FinancialDiversBookingAndAttachmentRequest
+  http_method: post
+  url_fragment: /financialdiversbookings
+  sample_params:
+    bookyear_id: 1
+    journal_key: "F1"
+    document_sequence_nr: 100
+    period_nr: 3
+    document_date: "2024-03-15"
+    booking_lines:
+      - type: "A"
+        account_key: 550000
+        amount: 100.0
+      - type: "A"
+        account_key: 400000
+        amount: -100.0
+
+update_financial_divers_booking:
+  schema: FinancialDiversBookingServiceData
+  http_method: put
+  url_fragment: /financialdiversbookings
+  sample_params:
+    bookyear_id: 1
+    journal_key: "F1"
+    document_sequence_nr: 100
+    period_nr: 3
+    document_date: "2024-03-15"
+    booking_lines:
+      - type: "A"
+        account_key: 550000
+        amount: 100.0
+      - type: "A"
+        account_key: 400000
+        amount: -100.0
+
+# ---------------------------------------------------------------------------
+# Invoices
+# ---------------------------------------------------------------------------
+
+create_invoice:
+  schema: InvoiceServiceData
+  http_method: post
+  url_fragment: /invoices
+  sample_params:
+    bookyear_id: 1
+    journal_key: "V1"
+    document_sequence_nr: 100
+    period_nr: 3
+    document_date: "2024-03-15"
+    expiry_date: "2024-04-15"
+    currency_code: "EUR"
+    relation_id: 1
+    reference: "INV-001"
+    invoice_lines:
+      - description: "Service"
+        count: 1
+        unit_price: 100.0
+        vat_code: "21"
+        booking_account_nr: 700000
+
+update_invoice:
+  schema: InvoiceServiceData
+  http_method: put
+  url_fragment: /invoices
+  sample_params:
+    bookyear_id: 1
+    journal_key: "V1"
+    document_sequence_nr: 100
+    period_nr: 3
+    document_date: "2024-03-15"
+    expiry_date: "2024-04-15"
+    currency_code: "EUR"
+    relation_id: 1
+    reference: "INV-001"
+    invoice_lines:
+      - description: "Service"
+        count: 1
+        unit_price: 100.0
+        vat_code: "21"
+        booking_account_nr: 700000
+
+send_invoices:
+  schema: SendInvoiceRequest
+  http_method: post
+  url_fragment: /invoices/send
+  pending: true
+  pending_reason: |
+    Field-name and shape mismatches with SendInvoiceRequest:
+    - tool sends `bookyearId` int, schema requires `bookyearKey` object
+    - tool sends `journalKey`, schema requires `journal`
+    - tool sends `fromDocumentSequenceNr`, schema requires `documentSequenceNr`
+    - tool missing REQUIRED `fromMailAddress`
+    TODO: rename fields in build_send_data and add fromMailAddress input.
+    This tool sends real emails — careful live testing required.
+  sample_params:
+    bookyear_id: 1
+    journal_key: "V1"
+    from_document_sequence_nr: 1
+    to_document_sequence_nr: 1
+
+# ---------------------------------------------------------------------------
+# Delivery notes
+# ---------------------------------------------------------------------------
+
+create_delivery_note:
+  schema: DeliveryNoteServiceData
+  http_method: post
+  url_fragment: /deliverynotes
+  sample_params:
+    bookyear_id: 1
+    journal_key: "L1"
+    document_sequence_nr: 100
+    period_nr: 3
+    document_date: "2024-03-15"
+    expiry_date: "2024-04-15"
+    relation_id: 1
+    delivery_lines:
+      - description: "Item"
+        count: 1
+        unit_price: 100.0
+        vat_code: "21"
+
+update_delivery_note:
+  schema: DeliveryNoteServiceData
+  http_method: put
+  url_fragment: /deliverynotes
+  sample_params:
+    bookyear_id: 1
+    journal_key: "L1"
+    document_sequence_nr: 100
+    period_nr: 3
+    document_date: "2024-03-15"
+    expiry_date: "2024-04-15"
+    relation_id: 1
+    delivery_lines:
+      - description: "Item"
+        count: 1
+        unit_price: 100.0
+        vat_code: "21"
+
+# ---------------------------------------------------------------------------
+# Balancings
+# ---------------------------------------------------------------------------
+
+insert_balancing:
+  schema: BalancingServiceData
+  http_method: post
+  url_fragment: /balancings
+  sample_params:
+    debet_key:
+      bookyear_id: 1
+      journal_key: "V1"
+      document_sequence_nr: 1
+      line_sequence_nr: -1
+    credit_key:
+      bookyear_id: 1
+      journal_key: "F1"
+      document_sequence_nr: 2
+      line_sequence_nr: 1
+    amount: 100.0
+
+delete_balancing_item:
+  tool: delete_balancing
+  schema: DeleteBalancingItemRequest
+  http_method: delete
+  url_fragment: /balancings/delete
+  sample_params:
+    mode: "item"
+    debet_key:
+      bookyear_id: 1
+      journal_key: "V1"
+      document_sequence_nr: 1
+      line_sequence_nr: -1
+    credit_key:
+      bookyear_id: 1
+      journal_key: "F1"
+      document_sequence_nr: 2
+      line_sequence_nr: 1
+
+delete_balancing_bookingline:
+  tool: delete_balancing
+  schema: BalancingKeyServiceData
+  http_method: delete
+  url_fragment: /balancings/bookingline/delete
+  sample_params:
+    mode: "bookingline"
+    bookyear_id: 1
+    journal_key: "F1"
+    document_sequence_nr: 1
+    line_sequence_nr: 1
+
+delete_balancing_document:
+  tool: delete_balancing
+  schema: DocumentKeyServiceData
+  http_method: delete
+  url_fragment: /balancings/document/delete
+  sample_params:
+    mode: "document"
+    bookyear_id: 1
+    journal_key: "A1"
+    document_sequence_nr: 1
+
+# ---------------------------------------------------------------------------
+# Payments and envelopes
+# ---------------------------------------------------------------------------
+
+add_invoice_to_payment_list:
+  schema: BankDocumentServiceData
+  http_method: post
+  url_fragment: /bank/paymentlist
+  sample_params:
+    bookyear_id: 1
+    journal_key: "A1"
+    document_sequence_nr: 1
+    amount: 100.0
+    reference: "PAY-001"
+
+add_free_payment:
+  schema: AddFreePaymentRequest
+  http_method: post
+  url_fragment: /bank/paymentlist/freepayment
+  pending: true
+  pending_reason: |
+    Tool missing REQUIRED `date` and `payDate` fields. Schema requires both.
+    TODO: add date + pay_date params to tool, include them in build_data.
+  sample_params:
+    amount: 100.0
+    reference: "FREE-001"
+    iban: "BE68539007547034"
+    relation_id: 1
+
+create_envelope:
+  schema: NewEnveloppeRequest
+  http_method: post
+  url_fragment: /bank/enveloppes
+  pending: true
+  pending_reason: |
+    Tool sends only `description` (not in schema). Schema REQUIRES bookyearKey
+    + journalKey, and optionally payDate + status.
+    TODO: rewrite tool interface — add bookyear_id and journal_key params,
+    drop description (not supported by API for envelopes).
+  sample_params:
+    description: "Test envelope"
+    payment_date: "2024-03-15"
+    journal_key: "F1"
+
+update_envelope:
+  schema: UpdateEnveloppeRequest
+  http_method: put
+  url_fragment: /bank/enveloppes/
+  pending: true
+  pending_reason: |
+    Tool sends `description` which is not in UpdateEnveloppeRequest schema
+    (schema has only journalKey, payDate, status).
+    TODO: remove description from build_data, expose journal_key/pay_date/status
+    in tool input_schema.
+  sample_params:
+    envelope_key_id: 1
+    description: "Updated envelope"
+    payment_date: "2024-03-20"
+
+add_payment_to_envelope:
+  schema: BankPaymentServiceData
+  http_method: post
+  url_fragment: /bank/enveloppes/
+  url_fragment_extra: /add
+  pending: true
+  pending_reason: |
+    Tool sends flat `paymentListKeyId` integer. Schema REQUIRES
+    `bankPaymentListKey` as nested object {id: ...}.
+    TODO: trivial fix — wrap the id in {bankPaymentListKey: {id: ...}}.
+  sample_params:
+    envelope_key_id: 1
+    payment_list_key_id: 1
+    amount: 100.0
+    reference: "PAY-001"
+
+remove_payment_from_envelope:
+  schema: BankPaymentServiceData
+  http_method: post
+  url_fragment: /bank/enveloppes/
+  url_fragment_extra: /remove
+  pending: true
+  pending_reason: |
+    Same as add_payment_to_envelope: paymentListKeyId vs bankPaymentListKey.
+    TODO: trivial fix.
+  sample_params:
+    envelope_key_id: 1
+    payment_list_key_id: 1
+    amount: 100.0
+    reference: "PAY-001"
+
+# ---------------------------------------------------------------------------
+# Bookyear lifecycle
+# ---------------------------------------------------------------------------
+
+create_bookyear:
+  schema: BookyearInsertRequest
+  http_method: post
+  url_fragment: /bookyears
+  pending: true
+  pending_reason: |
+    Tool sends description + currencyCode, neither in schema. Schema requires
+    names (array), bookingPeriodType, declarantType, fromDate, toDate,
+    proRataTemporis. Many other optional booleans (activateDbaNp, ...).
+    TODO: significant rewrite of tool. Bookyear creation is dossier-altering,
+    requires careful design.
+  sample_params:
+    description: "Boekjaar 2024"
+    from_date: "2024-01-01"
+    to_date: "2024-12-31"
+    periods: 12
+
+update_bookyear:
+  schema: BookyearUpdateRequest
+  http_method: put
+  url_fragment: /bookyears
+  pending: true
+  pending_reason: |
+    Tool sends `description` (not in schema). Schema has `names` (array),
+    plus various optional booleans matching create_bookyear.
+    TODO: replace description with names array in tool interface.
+  sample_params:
+    bookyear_id: 1
+    description: "Boekjaar 2024 (gewijzigd)"
+
+book_bookyear:
+  schema: BookBookyearRequest
+  http_method: post
+  url_fragment: /bookyears/book
+  pending: true
+  pending_reason: |
+    Tool sends `fromBookyearId` and `toBookyearId` (neither in schema).
+    Schema REQUIRES `bookyearKey: {id: ...}` only — bookyear is booked to
+    the NEXT bookyear automatically. Optional: copyAllAccountDescriptions,
+    closeSourceBookyear (booleans).
+    TODO: rewrite tool interface to take a single bookyear_id and the booleans.
+  sample_params:
+    from_bookyear_id: 1
+    to_bookyear_id: 2
+
+# ---------------------------------------------------------------------------
+# Write-tools that POST/PUT but with NO request body (only query params or
+# path params). Audit skips these (nothing to validate body-wise).
+# ---------------------------------------------------------------------------
+
+tools_without_body:
+  - book_invoices
+  - generate_invoice
+  - generate_delivery_note

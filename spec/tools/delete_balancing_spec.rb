@@ -16,31 +16,30 @@ RSpec.describe Tools::DeleteBalancing do
 
     it "deletes a balancing in item mode and sends DeleteBalancingItemRequest" do
       stub_octopus_full_auth
-      request_stub = stub_request(:delete, "#{OctopusClient::BASE_URL}/dossiers/42/balancings/delete")
-        .with { |req|
-          body = JSON.parse(req.body)
-          body == {
-            "debetKey" => {
-              "bookyearKey"        => { "id" => 10 },
-              "journalKey"         => "F1",
-              "documentSequenceNr" => 62,
-              "lineSequenceNr"     => 3
-            },
-            "creditKey" => {
-              "bookyearKey"        => { "id" => 10 },
-              "journalKey"         => "D4",
-              "documentSequenceNr" => 2,
-              "lineSequenceNr"     => 5
-            }
-          }
-        }
+      captured_body = nil
+      stub_request(:delete, "#{OctopusClient::BASE_URL}/dossiers/42/balancings/delete")
+        .with { |req| captured_body = JSON.parse(req.body); true }
         .to_return(status: 204, body: "", headers: {})
 
       result = described_class.call(params: valid_item_params, context: octopus_context)
 
       expect(result[:status]).to eq("deleted")
       expect(result[:message]).to include("item")
-      expect(request_stub).to have_been_requested
+      expect(captured_body).to eq(
+        "debetKey" => {
+          "bookyearKey" => { "id" => 10 },
+          "journalKey" => "F1",
+          "documentSequenceNr" => 62,
+          "lineSequenceNr" => 3
+        },
+        "creditKey" => {
+          "bookyearKey" => { "id" => 10 },
+          "journalKey" => "D4",
+          "documentSequenceNr" => 2,
+          "lineSequenceNr" => 5
+        }
+      )
+      expect(captured_body).to match_octopus_schema("DeleteBalancingItemRequest")
     end
 
     it "defaults line_sequence_nr to -1 in item mode when omitted" do
@@ -89,17 +88,9 @@ RSpec.describe Tools::DeleteBalancing do
 
     it "deletes a balancing by booking line with BalancingKeyServiceData (lineSequenceNr, not bookingLineSequenceNr)" do
       stub_octopus_full_auth
-      request_stub = stub_request(:delete, "#{OctopusClient::BASE_URL}/dossiers/42/balancings/bookingline/delete")
-        .with { |req|
-          body = JSON.parse(req.body)
-          body == {
-            "bookyearKey"        => { "id" => 10 },
-            "journalKey"         => "F1",
-            "documentSequenceNr" => 62,
-            "lineSequenceNr"     => 3
-          } &&
-            !body.key?("bookingLineSequenceNr")
-        }
+      captured_body = nil
+      stub_request(:delete, "#{OctopusClient::BASE_URL}/dossiers/42/balancings/bookingline/delete")
+        .with { |req| captured_body = JSON.parse(req.body); true }
         .to_return(status: 204, body: "")
 
       result = described_class.call(
@@ -115,7 +106,13 @@ RSpec.describe Tools::DeleteBalancing do
 
       expect(result[:status]).to eq("deleted")
       expect(result[:message]).to include("bookingline")
-      expect(request_stub).to have_been_requested
+      expect(captured_body).to eq(
+        "bookyearKey" => { "id" => 10 },
+        "journalKey" => "F1",
+        "documentSequenceNr" => 62,
+        "lineSequenceNr" => 3
+      )
+      expect(captured_body).to match_octopus_schema("BalancingKeyServiceData")
     end
 
     it "returns error in bookingline mode when line_sequence_nr is missing" do
@@ -138,16 +135,9 @@ RSpec.describe Tools::DeleteBalancing do
 
     it "deletes a balancing by document with DocumentKeyServiceData (journal, NOT journalKey)" do
       stub_octopus_full_auth
-      request_stub = stub_request(:delete, "#{OctopusClient::BASE_URL}/dossiers/42/balancings/document/delete")
-        .with { |req|
-          body = JSON.parse(req.body)
-          body == {
-            "bookyearKey"        => { "id" => 10 },
-            "journal"            => "A1",
-            "documentSequenceNr" => 111
-          } &&
-            !body.key?("journalKey")
-        }
+      captured_body = nil
+      stub_request(:delete, "#{OctopusClient::BASE_URL}/dossiers/42/balancings/document/delete")
+        .with { |req| captured_body = JSON.parse(req.body); true }
         .to_return(status: 204, body: "")
 
       result = described_class.call(
@@ -162,7 +152,12 @@ RSpec.describe Tools::DeleteBalancing do
 
       expect(result[:status]).to eq("deleted")
       expect(result[:message]).to include("document")
-      expect(request_stub).to have_been_requested
+      expect(captured_body).to eq(
+        "bookyearKey" => { "id" => 10 },
+        "journal" => "A1",
+        "documentSequenceNr" => 111
+      )
+      expect(captured_body).to match_octopus_schema("DocumentKeyServiceData")
     end
 
     it "returns error in document mode when fields are missing" do

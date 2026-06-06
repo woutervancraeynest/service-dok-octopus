@@ -28,34 +28,30 @@ RSpec.describe Tools::InsertBalancing do
 
     it "sends correctly formatted BalancingServiceData to Octopus" do
       stub_octopus_full_auth
-      request_stub = stub_request(:post, "#{OctopusClient::BASE_URL}/dossiers/42/balancings")
-        .with { |req|
-          body = JSON.parse(req.body)
-
-          body["balanceAmount"] == 495.48 &&
-            body["debetKey"] == {
-              "bookyearKey"        => { "id" => 10 },
-              "journalKey"         => "F1",
-              "documentSequenceNr" => 62,
-              "lineSequenceNr"     => 3
-            } &&
-            body["creditKey"] == {
-              "bookyearKey"        => { "id" => 10 },
-              "journalKey"         => "D4",
-              "documentSequenceNr" => 2,
-              "lineSequenceNr"     => 5
-            } &&
-            # No legacy fields should leak through
-            !body.key?("amount") &&
-            !body.key?("documentKeys") &&
-            !body.key?("balancingDate") &&
-            !body.key?("reference")
-        }
+      captured_body = nil
+      stub_request(:post, "#{OctopusClient::BASE_URL}/dossiers/42/balancings")
+        .with { |req| captured_body = JSON.parse(req.body); true }
         .to_return(status: 201, body: "", headers: { "Content-Type" => "application/json" })
 
       described_class.call(params: valid_params, context: octopus_context)
 
-      expect(request_stub).to have_been_requested
+      # Specific field assertions (regression on debet/credit/amount values).
+      expect(captured_body["balanceAmount"]).to eq(495.48)
+      expect(captured_body["debetKey"]).to eq(
+        "bookyearKey" => { "id" => 10 },
+        "journalKey" => "F1",
+        "documentSequenceNr" => 62,
+        "lineSequenceNr" => 3
+      )
+      expect(captured_body["creditKey"]).to eq(
+        "bookyearKey" => { "id" => 10 },
+        "journalKey" => "D4",
+        "documentSequenceNr" => 2,
+        "lineSequenceNr" => 5
+      )
+
+      # Schema validation: any deviation from BalancingServiceData fails here.
+      expect(captured_body).to match_octopus_schema("BalancingServiceData")
     end
 
     it "defaults line_sequence_nr to -1 when omitted (invoice header)" do
