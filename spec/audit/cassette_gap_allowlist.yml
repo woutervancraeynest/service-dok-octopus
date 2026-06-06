@@ -1,0 +1,91 @@
+# Cassette gap allowlist.
+#
+# Write-tools listed here are KNOWN to lack an integration cassette against
+# the real Octopus API. Each entry explains why and what makes recording one
+# non-trivial.
+#
+# This is technical debt. Each entry should ideally be moved to
+# tool_cassette_coverage.yml when:
+#   - The tool is touched (any code change should include a cassette)
+#   - We do a focused "fill cassette gaps" effort
+#
+# The cassette_coverage_spec.rb audit makes this allowlist load-bearing:
+# a new write-tool in manifest.json that's neither covered nor allowlisted
+# will fail the audit. This means new write-tools cannot be merged without
+# either a cassette or an explicit allowlist entry with a reason.
+
+# ---------------------------------------------------------------------------
+# Easy: idempotent upserts, sandbox-safe to record
+# ---------------------------------------------------------------------------
+
+create_or_update_account:
+  reason: "TODO: cassette. Idempotent upsert, sandbox-safe. Body shape also needs schema-conformance fix (see tool_schema_map.yml pending entry)."
+
+create_or_update_cost_centre:
+  reason: "TODO: cassette. Idempotent upsert, sandbox-safe. Body shape needs schema fix too."
+
+create_or_update_product:
+  reason: "TODO: cassette. Idempotent upsert, sandbox-safe. Body shape needs major restructuring (10+ required fields missing)."
+
+# ---------------------------------------------------------------------------
+# Medium: write-tools that modify or add to an existing entity
+# ---------------------------------------------------------------------------
+
+update_buy_sell_booking:
+  reason: "TODO: cassette. Needs an existing buy/sell booking to update in sandbox. Approach: take an existing A1 or V1 booking and do a no-op update."
+
+update_invoice:
+  reason: "TODO: cassette. Needs an existing invoice (Invoice Module must be active in sandbox)."
+
+create_delivery_note:
+  reason: "TODO: cassette. Sandbox must support delivery notes module."
+
+update_delivery_note:
+  reason: "TODO: cassette. Needs an existing delivery note."
+
+# ---------------------------------------------------------------------------
+# Hard: depends on specific sandbox state or has side effects
+# ---------------------------------------------------------------------------
+
+add_invoice_to_payment_list:
+  reason: "TODO: cassette. Needs an unbalanced invoice in sandbox."
+
+add_free_payment:
+  reason: "TODO: cassette. Body missing required fields (see schema audit pending). Once fixed, recording is straightforward."
+
+create_envelope:
+  reason: "TODO: cassette. Body shape fundamentally wrong (see schema audit pending)."
+
+update_envelope:
+  reason: "TODO: cassette. Needs an existing envelope. Body has unknown 'description' field."
+
+add_payment_to_envelope:
+  reason: "TODO: cassette. Needs an existing envelope + a payment in the list. Body uses wrong field name (paymentListKeyId vs bankPaymentListKey)."
+
+remove_payment_from_envelope:
+  reason: "TODO: cassette. Same as add_payment_to_envelope."
+
+generate_invoice:
+  reason: "TODO: cassette. Generates PDF; sandbox-safe but no body to test."
+
+generate_delivery_note:
+  reason: "TODO: cassette. Generates PDF; sandbox-safe but no body to test."
+
+book_invoices:
+  reason: "TODO: cassette. Makes invoices FINAL/immutable. Cannot be undone — careful sandbox setup needed."
+
+send_invoices:
+  reason: "TODO: cassette. SENDS REAL EMAILS. Body shape needs fix first (missing fromMailAddress required field). Recording requires controlled test mail setup."
+
+# ---------------------------------------------------------------------------
+# Lifecycle: alter dossier-level state
+# ---------------------------------------------------------------------------
+
+create_bookyear:
+  reason: "TODO: cassette. Creates a new bookyear; sandbox state-shifting. Body shape needs major rework."
+
+update_bookyear:
+  reason: "TODO: cassette. Modifies bookyear-level data. Body shape needs fix."
+
+book_bookyear:
+  reason: "TODO: cassette. CLOSES a bookyear; effectively irreversible. Body shape wrong (fromBookyearId/toBookyearId vs bookyearKey)."

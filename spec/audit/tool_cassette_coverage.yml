@@ -1,0 +1,34 @@
+# Cassette coverage map.
+#
+# For each MCP write-tool that has at least one VCR cassette tested against
+# the real Octopus API, this map records the cassette file(s) covering it.
+# The cassette_coverage_spec.rb audit verifies each path on disk.
+#
+# When a new cassette is added for a previously-uncovered tool:
+#   1. Move the tool's entry from cassette_gap_allowlist.yml to here.
+#   2. Add the cassette path(s).
+#   3. `bundle exec rspec spec/audit/cassette_coverage_spec.rb` should
+#      report the new coverage percentage.
+#
+# Paths are relative to the repository root.
+
+create_relation:
+  - spec/integration/cassettes/write_tools/create_relation.yml
+
+create_buy_sell_booking:
+  - spec/integration/cassettes/write_tools/create_buy_sell_booking.yml
+
+create_invoice:
+  - spec/integration/cassettes/write_tools/create_invoice.yml
+
+create_financial_divers_booking:
+  - spec/integration/cassettes/write_tools/create_financial_divers_booking.yml
+
+update_financial_divers_booking:
+  - spec/integration/cassettes/write_tools/update_financial_divers_booking_noop.yml
+
+insert_balancing:
+  - spec/integration/cassettes/balancings/delete_and_insert_roundtrip.yml
+
+delete_balancing:
+  - spec/integration/cassettes/balancings/delete_and_insert_roundtrip.yml

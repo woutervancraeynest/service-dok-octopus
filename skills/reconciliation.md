@@ -1,3 +1,18 @@
+---
+verified_against_api: true
+verified_date: 2025-06-06
+verified_against_api_version: "51.9.17"
+verified_via:
+  - spec/integration/balancings_spec.rb
+  - spec/integration/cassettes/balancings/delete_and_insert_roundtrip.yml
+  - spec/integration/cassettes/balancings/get_modified_balancings.yml
+notes: |
+  insert_balancing, delete_balancing and get_modified_balancings are all
+  exercised live against sandbox dossier 49555. The C/S type conventions
+  (V=debet/F=credit vs F=debet/A=credit) and the lineSequenceNr=-1 default
+  for invoice headers are confirmed via the live round-trip test.
+---
+
 # Skill: Betaalreconciliatie (Payment Reconciliation)
 
 ## Doel

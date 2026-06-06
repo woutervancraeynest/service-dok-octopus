@@ -212,6 +212,85 @@ Your container receives:
 | Response format | JSON |
 | Max manifest size | 100 KB |
 
+## Octopus API schema reference
+
+Two sources of truth for the Octopus REST API contract:
+
+- **Live**: `https://service.inaras.be/octopus-rest-api/v1/openapi.json`
+- **Pinned snapshot in this repo**: `docs/octopus_openapi_v51.9.17.json`
+  (used by the schema conformance audit; replace when upgrading the API)
+
+**Consult the snapshot first** when:
+- Adding a new write-tool — to know the exact endpoint, HTTP method,
+  request schema name, and required fields.
+- Debugging an unexpected HTTP 400 from Octopus — the schema almost always
+  reveals the body-shape mismatch faster than reading the gem source.
+
+How to find what a tool should send:
+1. Identify the gem method the tool calls (in `vendor/octopus_client/lib/octopus_client/resources/`).
+2. Note the endpoint and HTTP method in the gem comment (e.g. `# PUT /dossiers/{dossierId}/financialdiversbookings`).
+3. Look up that endpoint in the snapshot (`docs/octopus_openapi_v51.9.17.json`).
+4. The `requestBody.content.application/json.schema.$ref` is the schema name.
+5. The full schema is under `components.schemas.<Name>` — required fields,
+   property names, nested object structures.
+
+## Schema conformance audit
+
+`spec/audit/schema_conformance_spec.rb` runs on every `bundle exec rspec` and
+enforces that each write-tool's wire body matches its target OpenAPI schema
+(strict mode: missing required fields AND unknown extra fields both fail).
+
+The mapping lives in `spec/audit/tool_schema_map.yml`. When you add a new
+write-tool to `manifest.json`, you MUST add an entry here too — the audit
+will fail otherwise.
+
+Tools whose body shape currently doesn't match the schema are marked
+`pending: true` with a `pending_reason: |` explaining the mismatch. Treat
+pendings as TODO debt and resolve them when touching the tool.
+
+## Cassette coverage policy
+
+Every write-tool requires at least one VCR integration cassette against
+the real Octopus sandbox API. The cassette proves the body shape that
+schema validation accepts is also what the API actually accepts.
+
+`spec/audit/cassette_coverage_spec.rb` enforces this:
+- `spec/audit/tool_cassette_coverage.yml` maps tool → cassette path(s).
+- `spec/audit/cassette_gap_allowlist.yml` lists known gaps with a `reason:`.
+
+A new write-tool that's in neither file fails the audit. When recording a
+new cassette, move the entry from the gap allowlist to the coverage map.
+
+## Write-tool error logging convention
+
+Every write-tool should call its client write method inside `with_write_logging`
+from `lib/tools/concerns/write_logging.rb`. This guarantees that on failure,
+the sent body and the Octopus error message both reach the caller AND
+stderr. See `lib/tools/insert_balancing.rb` for the canonical example.
+
+## Skill verification metadata
+
+Files under `skills/` are read by AI agents at runtime. Each skill file
+SHOULD start with a YAML frontmatter block declaring whether its claims
+have been verified against the live API, and how:
+
+```yaml
+---
+verified_against_api: true
+verified_date: 2025-06-06
+verified_against_api_version: "51.9.17"
+verified_via:
+  - spec/integration/some_spec.rb
+notes: |
+  Optional context about what was confirmed.
+---
+```
+
+Skills with `verified_against_api: false` should explain in `notes:` what
+remains unverified. Do NOT make assertive claims about API behavior in
+skill files without verification — the LLM will trust the skill, and an
+incorrect skill silently produces incorrect tool calls.
+
 ## Checklist Before Submitting
 
 - [ ] `GET /health` returns 200
@@ -223,6 +302,10 @@ Your container receives:
 - [ ] `manifest.json` matches your actual tool implementations
 - [ ] Tool descriptions are clear and specific (the AI uses them to decide when to call your tool)
 - [ ] Tests pass: `bundle exec rspec`
+- [ ] New write-tools: schema conformance audit entry added (`spec/audit/tool_schema_map.yml`)
+- [ ] New write-tools: VCR cassette recorded (or explicit allowlist entry with `reason:`)
+- [ ] New write-tools: use `with_write_logging` helper
+- [ ] New skills: frontmatter declares `verified_against_api: true/false`
 
 ## Testing
 
