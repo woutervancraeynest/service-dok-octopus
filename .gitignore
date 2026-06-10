@@ -1,5 +1,7 @@
 # Environment files with credentials
-.env.test
+# Catches .env.test, .env.by2be, etc. but keeps .env.*.example templates.
+.env.*
+!.env.*.example
 
 # Ruby
 *.gem
