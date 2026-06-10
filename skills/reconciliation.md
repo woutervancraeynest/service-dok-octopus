@@ -1,6 +1,6 @@
 ---
 verified_against_api: true
-verified_date: 2025-06-06
+verified_date: 2025-06-08
 verified_against_api_version: "51.9.17"
 verified_via:
   - spec/integration/balancings_spec.rb
@@ -11,6 +11,14 @@ notes: |
   exercised live against sandbox dossier 49555. The C/S type conventions
   (V=debet/F=credit vs F=debet/A=credit) and the lineSequenceNr=-1 default
   for invoice headers are confirmed via the live round-trip test.
+
+  The duplicate-detection section + insert_balancing diagnostic enrichment
+  are derived from a live investigation against the by2-be production
+  dossier on 2025-06-08, where three customer invoices in BJ9 had
+  identical amounts/relations to three new invoices in BJ10, the BJ10
+  invoices were CODA-matched against bank receipts via structured
+  communication, and the LLM tried to re-balance the BJ9 originals
+  against the already-matched bank lines.
 ---
 
 # Skill: Betaalreconciliatie (Payment Reconciliation)
@@ -99,17 +107,46 @@ list_buy_sell_bookings(bookyear_id: 10, journal_key: "V1") → Alle verkoopboeki
 
 Vergelijk elke niet-afgepunte bankboeking met openstaande facturen.
 
+#### Vóór elke match: duplicate-detectie
+
+In veel dossiers bestaan **dubbele facturen** voor dezelfde relatie en hetzelfde bedrag, vaak verdeeld over twee boekjaren. Voorbeeld geobserveerd:
+
+- V1/#98 (BJ9, datum 2025-12-16, geen referentie, €22.167,20, klant X) — openstaand
+- V1/#28 (BJ10, datum 2026-04-16, ref `+++252/0261/55788+++`, €22.167,20, klant X) — al afgepunt tegen F1/#68
+
+Een naïeve match op "klant + bedrag" zou de oude BJ9-factuur kiezen, maar de bankontvangst (met gestructureerde mededeling) hoort eigenlijk bij de nieuwere BJ10-factuur. De CODA-import heeft die meestal al automatisch correct afgepunt.
+
+**Regel**: bij twee of meer openstaande facturen voor dezelfde relatie met hetzelfde bedrag:
+1. Geef voorrang aan de factuur waarvan de `reference` matcht met de bankboeking-`reference` (gestructureerde mededeling)
+2. Als geen referentie-match: kies de factuur die het dichtst bij de bankboekingsdatum ligt
+3. Controleer expliciet of de andere factuur al afgepunt is via `get_modified_balancings`
+4. Als de bank-credit-lijn al afgepunt is tegen een ander document: punt NIET nogmaals af; rapporteer als "duplicate-conflict" en laat de boekhouder beslissen
+
+#### Foutdiagnostiek bij `insert_balancing`
+
+De tool voert bij een afgewezen call automatisch een diagnose uit en geeft in de `error` én in een apart veld `existing_balancings_on_target_lines` terug welke bestaande afpuntingen op je doel-lijnen zitten. Voorbeeld respons bij conflict:
+
+```
+error: Octopus API error: ...
+       Existing balancings on your target lines (this is likely WHY Octopus refused). ...
+         - type=C relation=5: DEBET V1/#28 L-1 (BJ10) ↔ CREDIT F1/#68 L1 (BJ10) amount=22167.2
+
+existing_balancings_on_target_lines: [ { ... } ]
+```
+
+Als je dit ziet: je probeerde een lijn af te punten die al volledig afgepunt is. Onderzoek of er een dubbele factuur is en pas duplicate-detectie toe.
+
 #### Matching criteria (in volgorde van betrouwbaarheid):
 
 1. **Gestructureerde mededeling** (HOOGSTE betrouwbaarheid)
    - Zoek in de `reference` van de bankboeking naar het patroon `+++xxx/xxxx/xxxxx+++`
    - Match met de `reference` van een openstaande factuur
-   - Bij een match: **automatisch afpunten**
+   - Bij een match: **automatisch afpunten** (pas wel duplicate-detectie toe — zie boven)
 
 2. **Exact bedrag + zelfde relatie** (HOGE betrouwbaarheid)
    - Bankboeking heeft een `relationId` die overeenkomt met een factuur
    - Het bedrag komt exact overeen
-   - Bij een match: **automatisch afpunten**
+   - Bij een match: **automatisch afpunten** — MAAR check eerst op dubbele facturen (zelfde relatie + bedrag in een ander boekjaar). Bij twijfel: presenteer als voorstel.
 
 3. **Exact bedrag zonder relatie-match** (MEDIUM betrouwbaarheid)
    - Bedrag komt exact overeen maar relatie is niet dezelfde of onbekend

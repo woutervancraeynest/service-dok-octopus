@@ -151,6 +151,15 @@ RSpec.describe Tools::InsertBalancing do
           body: { errorMessage: "Invalid balancing data" }.to_json,
           headers: { "Content-Type" => "application/json" }
         )
+      # On error the tool issues a diagnostic call. Stub it with no existing
+      # balancings — verifies the diagnostic doesn't mask the original error
+      # when no conflicts are found.
+      stub_request(:get, /\/dossiers\/42\/balancings\/modified/)
+        .to_return(
+          status: 200,
+          body: { modifiedBalancings: [], deletedBalancings: [] }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
 
       result = described_class.call(params: valid_params, context: octopus_context)
 
@@ -158,6 +167,63 @@ RSpec.describe Tools::InsertBalancing do
       expect(result[:error]).to include("Invalid balancing data")
       expect(result[:sent_body]).to be_a(Hash)
       expect(result[:sent_body]["balanceAmount"]).to eq(495.48)
+      expect(result).not_to have_key(:existing_balancings_on_target_lines)
+    end
+
+    it "enriches the error with existing balancings when a target line is already touched" do
+      stub_octopus_full_auth
+      # First call: insert is refused by Octopus.
+      stub_request(:post, "#{OctopusClient::BASE_URL}/dossiers/42/balancings")
+        .to_return(
+          status: 400,
+          body: { errorMessage: "Generic error" }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+      # Diagnostic call: there's an existing balancing touching credit_key
+      # (the F1/#2 line 5 we're trying to use again).
+      existing_balancing = {
+        debetDocument: {
+          balancingKey: { bookyearKey: { id: 10 }, journalKey: "V1", documentSequenceNr: 28, lineSequenceNr: -1 }
+        },
+        creditDocument: {
+          balancingKey: { bookyearKey: { id: 10 }, journalKey: "D4", documentSequenceNr: 2, lineSequenceNr: 5 }
+        },
+        creditBalancedBookingAmount: 22167.20,
+        type: { type: "C", relationKey: { id: 5 } }
+      }
+      stub_request(:get, /\/dossiers\/42\/balancings\/modified/)
+        .to_return(
+          status: 200,
+          body: { modifiedBalancings: [existing_balancing], deletedBalancings: [] }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+
+      result = described_class.call(params: valid_params, context: octopus_context)
+
+      expect(result[:error]).to include("Octopus API error")
+      expect(result[:error]).to include("Existing balancings on your target lines")
+      expect(result[:error]).to include("V1/#28")
+      expect(result[:existing_balancings_on_target_lines]).to be_an(Array)
+      expect(result[:existing_balancings_on_target_lines].length).to eq(1)
+    end
+
+    it "does not mask the original error if the diagnostic call itself fails" do
+      stub_octopus_full_auth
+      stub_request(:post, "#{OctopusClient::BASE_URL}/dossiers/42/balancings")
+        .to_return(
+          status: 400,
+          body: { errorMessage: "Original error" }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+      # Diagnostic itself fails — should be swallowed silently.
+      stub_request(:get, /\/dossiers\/42\/balancings\/modified/)
+        .to_return(status: 500, body: { errorMessage: "Server boom" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      result = described_class.call(params: valid_params, context: octopus_context)
+
+      expect(result[:error]).to include("Original error")
+      expect(result).not_to have_key(:existing_balancings_on_target_lines)
     end
   end
 end
